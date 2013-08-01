@@ -27,11 +27,11 @@ module Etcd
     end
 
     def key_endpoint
-      version_prefix + '/keys/'
+      version_prefix + '/keys'
     end
 
     def watch_endpoint
-      version_prefix + '/watch/'
+      version_prefix + '/watch'
     end
 
     def test_and_set(key, value, prevValue, ttl = nil)
