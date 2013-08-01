@@ -27,11 +27,11 @@ client = Etcd.client(:host=>'127.0.0.1', :port=>4003, :allow_redirect => false) 
 ```ruby
 client.set('/nodes/n1', 1)
 # with ttl
-client1.set('/nodes/n2', 2, 4)  # sets the ttl to 4 seconds
+client.set('/nodes/n2', 2, 4)  # sets the ttl to 4 seconds
 ```
 ### Get a key
 ```ruby
-client2.get('/nodes/n2').value
+client.get('/nodes/n2').value
 
 ```
 ### Delete a key
@@ -46,10 +46,14 @@ client.test_and_set('/nodes/n2', 2, 4) # will set /nodes/n2 's value to 2 only i
 ```
 
 ### Watch a key
-client3.watch('/nodes/n1') # will wait till the key is changed, and return once its changed
+```ruby
+client.watch('/nodes/n1') # will wait till the key is changed, and return once its changed
+```
 
 ### List sub keys
-client2.get('/nodes')
+```ruby
+client.get('/nodes')
+```
 
 ### Get machines in the cluster
 ```ruby
