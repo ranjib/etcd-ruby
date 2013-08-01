@@ -1,5 +1,6 @@
-require "etcd/version"
-
+require 'etcd/client'
 module Etcd
-  # Your code goes here...
+  def self.client(opts={})
+    Etcd::Client.new(opts)
+  end
 end

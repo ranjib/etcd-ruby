@@ -1,7 +1,6 @@
 # Etcd
 
-TODO: Write a gem description
-
+A ruby client for [etcd](https://github.com/coreos/etcd)
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -18,7 +17,6 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
 
 ## Contributing
 
