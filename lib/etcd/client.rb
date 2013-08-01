@@ -2,10 +2,12 @@ require 'net/http'
 require 'json'
 require 'hashie'
 require 'etcd/log'
-require 'etcd/mixins/validations.rb'
+require 'etcd/mixins/extensions.rb'
 
 module Etcd
   class Client
+
+    include Etcd::Extensions
 
     attr_reader :host, :port, :allow_redirect
 
@@ -77,13 +79,6 @@ module Etcd
                     api_execute(watch_endpoint + key, :post, {'index' => index})
                   end
       Hashie::Mash.new(JSON.parse(response))
-    end
-
-    def eternal_watch(opts={})
-      loop do
-        response = watch(opts[:key], opts[:index])
-        yield response
-      end
     end
 
     def api_execute(path, method, params=nil)
