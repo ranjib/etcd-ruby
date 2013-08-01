@@ -11,7 +11,11 @@ module Etcd
     def initialize(opts={})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
-      @allow_redirect = opts[:allow_redirect] || true
+      if opts.has_key?(:allow_redirect)
+        @allow_redirect = opts[:allow_redirect]
+      else
+        @allow_redirect = true
+      end
     end
 
     def version_prefix
@@ -116,11 +120,11 @@ module Etcd
       else
         Log.debug("Http error")
         Log.debug(res.body)
-        #res.error!
-        res
+        res.error!
       end
     end
 
+    private
     def redirect?(code)
       (code >= 300) and (code < 400)
     end
