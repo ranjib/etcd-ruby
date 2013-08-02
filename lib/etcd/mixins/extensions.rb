@@ -1,5 +1,16 @@
+require 'etcd/lock'
+
 module Etcd
   module Extensions
+
+    def has_key?(key)
+      begin
+        get(key)
+        true
+      rescue Net::HTTPServerException => e
+        false
+      end
+    end
 
     def eternal_watch(key, index=nil)
       loop do
@@ -8,9 +19,17 @@ module Etcd
       end
     end
 
-    def lock(key, value, prevValue, ttl = nil)
-      response = test_and_set(key, value, prevValue, ttl = nil)
-      yield response
-    end
+    def lock(opts={})
+      opts[:client] = self
+      lock = Lock.new(opts)
+      lock.acquire
+      begin
+        yield lock.lock_id
+      rescue Exception => e
+        raise e
+      ensure
+        lock.release
+      end
+    end  
   end
 end
