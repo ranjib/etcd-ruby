@@ -2,11 +2,14 @@ require 'net/http'
 require 'json'
 require 'hashie'
 require 'etcd/log'
+require 'etcd/mixins/extensions.rb'
 
 module Etcd
   class Client
 
-    attr_reader :host, :port, :http, :allow_redirect
+    include Etcd::Extensions
+
+    attr_reader :host, :port, :allow_redirect
 
     def initialize(opts={})
       @host = opts[:host] || '127.0.0.1'
@@ -68,7 +71,7 @@ module Etcd
         Hashie::Mash.new(obj)
       end
     end
-
+    
     def watch(key, index=nil)
       response = if index.nil?
                     api_execute(watch_endpoint + key, :get)

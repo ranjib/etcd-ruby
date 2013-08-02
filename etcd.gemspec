@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "mixlib-cli"
   spec.add_dependency "mixlib-log"
   spec.add_dependency "hashie"
+  spec.add_dependency "uuid"
 
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "rake"
