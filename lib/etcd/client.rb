@@ -71,7 +71,7 @@ module Etcd
                   else
                     api_execute(watch_endpoint + key, :post, {'index' => index})
                   end
-      Hashie::Mash.new(JSON.parse(response))
+      json2obj(response)
     end
 
     def api_execute(path, method, params=nil)
