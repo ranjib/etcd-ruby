@@ -2,9 +2,15 @@ require 'net/http'
 require 'json'
 require 'hashie'
 require 'etcd/log'
+require 'etcd/mixins/helpers'
+require 'etcd/mixins/lockable'
+
 
 module Etcd
   class Client
+
+    include Etcd::Helpers
+    include Etcd::Lockable
 
     attr_reader :host, :port, :http, :allow_redirect
 

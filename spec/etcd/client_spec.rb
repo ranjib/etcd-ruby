@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'etcd/mixins/helpers_spec'
 
 describe Etcd::Client do
 
@@ -61,4 +62,6 @@ describe Etcd::Client do
     client.should_receive(:api_execute).with('/v1/keys/foo', :delete).and_return('{"index":"1"}')
     client.delete('/foo')
   end
+
+  it_should_behave_like Etcd::Helpers
 end
