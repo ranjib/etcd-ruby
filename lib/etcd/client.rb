@@ -43,7 +43,7 @@ module Etcd
       payload = {'value' => value, 'prevValue' => prevValue }
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :post, payload)
-      Hashie::Mash.new(JSON.parse(response))
+      json2obj(response)
     end
 
     def set(key, value, ttl=nil)
@@ -51,22 +51,18 @@ module Etcd
       payload = {'value' => value} 
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :post, payload)
-      Hashie::Mash.new(JSON.parse(response))
+      json2obj(response)
     end
+
 
     def delete(key)
       response = api_execute(key_endpoint + key, :delete)
-      Hashie::Mash.new(JSON.parse(response))
+      json2obj(response)
     end
 
     def get(key)
       response = api_execute(key_endpoint + key, :get)
-      obj = JSON.parse(response)
-      if obj.is_a?(Array)
-        obj.map{|e| Hashie::Mash.new(e)}
-      else
-        Hashie::Mash.new(obj)
-      end
+      json2obj(response)
     end
 
     def watch(key, index=nil)
@@ -127,6 +123,15 @@ module Etcd
     private
     def redirect?(code)
       (code >= 300) and (code < 400)
+    end
+
+    def json2obj(json)
+      obj = JSON.parse(json)
+      if obj.is_a?(Array)
+        obj.map{|e| Hashie::Mash.new(e)}
+      else
+        Hashie::Mash.new(obj)
+      end
     end
   end
 end
