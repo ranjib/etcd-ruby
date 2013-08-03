@@ -17,6 +17,7 @@ module Etcd
     def initialize(opts={})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
+      @read_timeout = opts[:read_timeout] || 60
       if opts.has_key?(:allow_redirect)
         @allow_redirect = opts[:allow_redirect]
       else
@@ -54,7 +55,7 @@ module Etcd
 
     def set(key, value, ttl=nil)
       path  = key_endpoint + key
-      payload = {'value' => value} 
+      payload = {'value' => value}
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :post, payload)
       json2obj(response)
@@ -89,9 +90,10 @@ module Etcd
               else
                 Net::HTTP.new(host, port)
               end
+      http.read_timeout = @read_timeout
 
       case  method
-      when :get 
+      when :get
         unless params.nil?
           encoded_params = URI.encode_www_form(params)
           path+= "?" + encoded_params
@@ -113,7 +115,7 @@ module Etcd
       Log.debug("Invoking: '#{req.class}' against '#{path}")
       res = http.request(req)
       Log.debug("Response code: #{res.code}")
-      if res.is_a?(Net::HTTPSuccess) 
+      if res.is_a?(Net::HTTPSuccess)
         Log.debug("Http success")
         res.body
       elsif redirect?(res.code.to_i) and allow_redirect
