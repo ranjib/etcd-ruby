@@ -4,6 +4,7 @@ require 'hashie'
 require 'etcd/log'
 require 'etcd/mixins/helpers'
 require 'etcd/mixins/lockable'
+require 'ostruct'
 
 
 module Etcd
@@ -136,9 +137,9 @@ module Etcd
     def json2obj(json)
       obj = JSON.parse(json)
       if obj.is_a?(Array)
-        obj.map{|e| Hashie::Mash.new(e)}
+        obj.map{|e| OpenStruct.new(e)}
       else
-        Hashie::Mash.new(obj)
+        OpenStruct.new(obj)
       end
     end
   end
