@@ -65,6 +65,11 @@ client.machines
 client.leader
 ```
 
+## Contrubutors (git log --format=format:'%an' | sort | uniq)
+* Jesse Nelson
+* Ranjib Dey
+
+
 
 ## Contributing
 
@@ -73,3 +78,4 @@ client.leader
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+6. If applicable, update the README.md
