@@ -1,5 +1,5 @@
 before_install: 
-  - sudo apt-get install go
+  - sudo apt-get install golang
   - mkdir etcd
   - cd etcd &&  GOPATH=`pwd` &&  go get github.com/coreos/etcd
   - cd etcd &&  GOPATH=`pwd` &&  go install github.com/coreos/etcd
