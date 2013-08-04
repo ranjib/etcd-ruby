@@ -66,9 +66,9 @@ client.machines
 client.leader
 ```
 
-## Contrubutors (git log --format=format:'%an' | sort | uniq)
-* Jesse Nelson
+## Contributors 
 * Ranjib Dey
+* Jesse Nelson
 
 
 
