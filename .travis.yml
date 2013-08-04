@@ -9,4 +9,4 @@ rvm:
   - 2.0.0
 branches:
   only:
-    - integration_testing
+    - master
