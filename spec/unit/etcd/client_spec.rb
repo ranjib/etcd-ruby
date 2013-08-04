@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'etcd/mixins/helpers_spec'
+require 'unit/etcd/mixins/helpers_spec'
 
 describe Etcd::Client do
 
