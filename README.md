@@ -1,3 +1,4 @@
+[![Built on Travis](https://secure.travis-ci.org/ranjib/etcd-ruby.png?branch=master)](http://travis-ci.org/ranjib/etcd-ruby)
 # Etcd
 
 A ruby client for [etcd](https://github.com/coreos/etcd)
