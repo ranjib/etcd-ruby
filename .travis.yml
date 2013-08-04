@@ -1,8 +1,8 @@
 before_install: 
   - sudo apt-get install golang
   - mkdir etcd
-  - cd etcd &&  GOPATH=`pwd` &&  go get github.com/coreos/etcd
-  - cd etcd &&  GOPATH=`pwd` &&  go install github.com/coreos/etcd
+  - bash -c 'cd etcd &&  GOPATH=`pwd` &&  go get github.com/coreos/etcd'
+  - bash -c 'cd etcd &&  GOPATH=`pwd` &&  go install github.com/coreos/etcd'
 rvm:
   - ree       # Remove on July 1, 2013
   - 1.9.3
