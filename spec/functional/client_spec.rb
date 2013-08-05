@@ -28,9 +28,27 @@ describe "Functional Test Suite" do
   end
 
   describe "read only client" do
-    it "should not allow write"
-    it "should allow reads"
-    it "should allow watch"
+    it "should not allow write" do
+      key= random_key
+      expect{
+        read_only_client.set(key, uuid.generate)
+      }.to raise_error(Net::HTTPRetriableError)
+    end
+
+    it "should allow reads" do
+      key = random_key
+      value = uuid.generate
+      client.set(key, value)
+      sleep 1
+      expect(read_only_client.get(key).value).to eq(value)
+    end
+
+    it "should allow watch" do
+      key = random_key
+      value = uuid.generate
+      index = client.set(key, value).index
+      expect(read_only_client.watch(key, index).value).to eq(value)
+    end
   end
 
   it "#set/#get" do
@@ -58,27 +76,21 @@ describe "Functional Test Suite" do
     end
   end
 
+
   describe "#watch" do
     it "without index, returns the value at a particular index" do
+      key = random_key(4)
       value1 = uuid.generate
       value2 = uuid.generate
-      value3 = uuid.generate
-      value4 = uuid.generate
-      key = random_key(4)
-      client.set(key, value1)
-      client.set(key, value2)
-      client.set(key, value3)
-      client.set(key, value4)
 
-      current_index = client.get(key).index
-      expect(client.watch(key, current_index - 3).value).to eq(value1)
-      expect(client.watch(key, current_index - 2).value).to eq(value2)
-      expect(client.watch(key, current_index - 1).value).to eq(value3)
-      expect(client.watch(key, current_index).value).to eq(value4)
+      index1 = client.set(key, value1).index
+      index2 = client.set(key, value2).index
+
+      expect(client.watch(key, index1).value).to eq(value1)
+      expect(client.watch(key, index2).value).to eq(value2)
     end
 
     it "with index, waits and return when the key is updated" do
-      puts "watching a key.."
       response = nil
       key = random_key
       value = uuid.generate
