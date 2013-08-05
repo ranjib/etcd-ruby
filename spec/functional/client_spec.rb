@@ -1,12 +1,7 @@
-#get('/a')                 = {"action":"GET","key":"/a","value":"1","index":1}
-##set('/a',1)               = {"action":"SET","key":"/a","value":"1","index":1,"newKey":true}
-##watch('/a')               = {"action":"SET","key":"/a","value":"1","index":1,"prevValue":"FooBAr"}
-##test_and_set('/a', 10, 1) = {"action":"SET","key":"/a","value":"1","index":1,"prevValue":"1"}
-#require 'ostruct'
-
 $:<< "lib/"
 
 require 'etcd'
+require 'uuid'
 
 ETCD_BIN= ENV['ETCD_BIN'] || './etcd/bin/etcd'
 
@@ -27,35 +22,72 @@ describe "Functional Test Suite" do
     Etcd.client
   end
 
+
+  let(:read_only_client) do
+    Etcd.client(:allow_redirect=>false, :port=> 4004)
+  end
+
+  describe "read only client" do
+    it "should not allow write"
+    it "should allow reads"
+    it "should allow watch"
+  end
+
   it "#set/#get" do
-    client.set('/a/b/c', 1)
-    expect(client.get('/a/b/c').value).to eq("1")
+    key = random_key
+    value = uuid.generate
+    client.set(key, value)
+    expect(client.get(key).value).to eq(value)
   end
 
   describe "test_and_set" do
     it "should pass when prev value is correct" do
-      client.set('/a/b/d',1)
-      expect(client.test_and_set('/a/b/d', 10, 1)).to_not be_nil
+      key = random_key(2)
+      old_value = uuid.generate
+      new_value = uuid.generate
+      client.set(key, old_value)
+      client.test_and_set(key, new_value, old_value)
+      expect(client.get(key).value).to eq(new_value)
     end
 
     it "should fail when prev value is incorrect" do
-      client.set('/a/b/d',1)
-      expect{ client.test_and_set('/a/b/d', 10, 2)}.to raise_error(Net::HTTPServerException)
+      key = random_key(2)
+      value = uuid.generate
+      client.set(key, value)
+      expect{ client.test_and_set(key, 10, 2)}.to raise_error(Net::HTTPServerException)
     end
   end
 
   describe "#watch" do
     it "without index, returns the value at a particular index" do
-      client.set('/a/b/e', 1)
-      client.set('/a/b/e', 2)
-      client.set('/a/b/e', 3)
-      client.set('/a/b/e', 4)
-      current_index = client.get('/a/b/e').index
-      expect(client.watch('/a/b/e', current_index - 1).value.to_i).to eq(3)
+      value1 = uuid.generate
+      value2 = uuid.generate
+      value3 = uuid.generate
+      value4 = uuid.generate
+      key = random_key(4)
+      client.set(key, value1)
+      client.set(key, value2)
+      client.set(key, value3)
+      client.set(key, value4)
+
+      current_index = client.get(key).index
+      expect(client.watch(key, current_index - 3).value).to eq(value1)
+      expect(client.watch(key, current_index - 2).value).to eq(value2)
+      expect(client.watch(key, current_index - 1).value).to eq(value3)
+      expect(client.watch(key, current_index).value).to eq(value4)
     end
 
     it "with index, waits and return when the key is updated" do
-      pending
+      puts "watching a key.."
+      response = nil
+      value = uuid.generate
+      thr = Thread.new do
+        response = client.watch('/a/b/e')
+      end
+      puts "sleeping for 1 seconds"
+      sleep 1
+      client.set('/a/b/e', value)
+      expect(response.value).to eq(value)
     end
   end
 

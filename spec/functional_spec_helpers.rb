@@ -1,3 +1,5 @@
+require 'uuid'
+
 module Etcd
   module FunctionalSpec
     module Helpers
@@ -35,6 +37,18 @@ module Etcd
         Process.detach(pid)
         sleep 1
         pid
+      end
+
+      def uuid
+        @uuid ||= UUID.new
+      end
+
+      def random_key(n=1)
+        key=''
+        n.times do
+          key << '/'+ uuid.generate
+        end
+        key
       end
     end
   end
