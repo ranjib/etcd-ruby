@@ -1,7 +1,7 @@
 module Etcd
   module Lockable
     def lock(opts={})
-      opts[:client] = self
+      opts[:client] = opts[:client] || self
       lock = Lock.new(opts)
       lock.acquire
       begin

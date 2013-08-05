@@ -2,9 +2,9 @@ require 'uuid'
 
 module Etcd
   class Lock
+    class AcqusitionFailure < StandardError; end
+    class ReleaseFailure < StandardError; end
 
-    class LockAcqusitionFailure < StandardError; end
-    class LockReleaseFailure < StandardError; end
 
     attr_reader :lock_id, :key, :value, :client
     attr_reader :retries, :retry_interval, :attempts
@@ -27,7 +27,7 @@ module Etcd
         response
       rescue Exception => e  
         @attempts += 1
-        raise LockAcqusitionFailure, e.message if attempts >= retries
+        raise AcqusitionFailure, e.message if attempts >= retries
         sleep retry_interval
         acquire
       end
@@ -37,7 +37,7 @@ module Etcd
       begin
         response = client.test_and_set(key, value, lock_id)
       rescue Exception => e
-        raise LockReleaseFailure, e.message
+        raise ReleaseFailure, e.message
       end
     end
 
