@@ -80,13 +80,13 @@ describe "Functional Test Suite" do
     it "with index, waits and return when the key is updated" do
       puts "watching a key.."
       response = nil
+      key = random_key
       value = uuid.generate
       thr = Thread.new do
-        response = client.watch('/a/b/e')
+        response = client.watch(key)
       end
-      puts "sleeping for 1 seconds"
-      sleep 1
-      client.set('/a/b/e', value)
+      client.set(key, value)
+      thr.join
       expect(response.value).to eq(value)
     end
   end
