@@ -1,6 +1,5 @@
 require 'net/http'
 require 'json'
-require 'hashie'
 require 'etcd/log'
 require 'etcd/mixins/helpers'
 require 'etcd/mixins/lockable'
@@ -8,12 +7,24 @@ require 'ostruct'
 
 
 module Etcd
+  ##
+  # This is the central ruby class for Etcd. It provides methods for all Etcd api calls.
+  # It also provides few additional methods beyond the core Etcd api, like Etcd::Client#lock
+  # and Etcd::Client#eternal_watch, they are defined in separate modules and included in this
+  # class
   class Client
 
     include Etcd::Helpers
     include Etcd::Lockable
 
     attr_reader :host, :port, :http, :allow_redirect
+
+    ##
+    # Creates a new instance of Etcd::Client. It accepts a hash +opts+ as argument
+    # 
+    # @param [Hash] opts The options for new Etcd::Client object
+    # @opts [String] :host IP address of the etcd server (default is '127.0.0.1')
+    # @opts [Fixnum] :port Port number of the etcd server (default is 4001)
 
     def initialize(opts={})
       @host = opts[:host] || '127.0.0.1'
