@@ -1,10 +1,9 @@
 before_install: 
-  - sudo add-apt-repository ppa:duh/golang
-  - sudo apt-get update
-  - sudo apt-get install golang
+  - sudo add-apt-repository ppa:duh/golang -y
+  - sudo apt-get update -y
+  - sudo apt-get install golang -y
   - mkdir etcd
-  - bash -c 'cd etcd &&  GOPATH=`pwd` &&  go get github.com/coreos/etcd'
-  - bash -c 'cd etcd &&  GOPATH=`pwd` &&  go install github.com/coreos/etcd'
+  - bash build
 rvm:
   - 1.9.3
   - 2.0.0
