@@ -3,7 +3,7 @@ $:<< "lib/"
 require 'etcd'
 require 'uuid'
 
-ETCD_BIN= ENV['ETCD_BIN'] || './etcd/bin/etcd'
+ETCD_BIN = ENV['ETCD_BIN'] || './etcd/etcd'
 
 require 'functional_spec_helpers'
 require 'functional/lock_spec'
