@@ -73,7 +73,7 @@ module Etcd
       json2obj(response)
     end
 
-
+    # Deletes a key
     def delete(key)
       response = api_execute(key_endpoint + key, :delete)
       json2obj(response)
