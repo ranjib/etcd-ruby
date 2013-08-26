@@ -27,10 +27,11 @@ module Etcd
       end
 
       def spawn_etcd_server(dir, client_port=4001, server_port=7001, leader = nil)
+        args = " -c 127.0.0.1:#{client_port} -s 127.0.0.1:#{server_port} -d #{dir} -n node_#{client_port}"
         command = if leader.nil?
-                    ETCD_BIN + " -c 127.0.0.1:#{client_port} -s 127.0.0.1:#{server_port} -d #{dir}"
+                    ETCD_BIN + args
                   else
-                    ETCD_BIN + " -c 127.0.0.1:#{client_port} -s 127.0.0.1:#{server_port} -C #{leader} -d #{dir}"
+                    ETCD_BIN + args + " -C #{leader}"
                   end
         puts command
         pid = spawn(command)
