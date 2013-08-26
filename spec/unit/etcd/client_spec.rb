@@ -17,12 +17,12 @@ describe Etcd::Client do
   end
 
   it "#machines should make /machines GET http request" do
-    client.should_receive(:api_execute).with('/machines', :get).and_return('foobar')
+    client.should_receive(:api_execute).with('/v1/machines', :get).and_return('foobar')
     expect(client.machines).to eq(['foobar'])
   end
 
   it "#leader should make /leader GET http request" do
-    client.should_receive(:api_execute).with('/leader', :get).and_return('foobar')
+    client.should_receive(:api_execute).with('/v1/leader', :get).and_return('foobar')
     expect(client.leader).to eq('foobar')
   end
 

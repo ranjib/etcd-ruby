@@ -7,8 +7,8 @@ module Etcd
         @tmpdir = Dir.mktmpdir
         pid = spawn_etcd_server(@tmpdir+'/leader')
         @pids =  Array(pid)
-        puts "Etcd leader process id :#{@pid}"
-        leader = '127.0.0.1:4001'    
+        puts "Etcd leader process id :#{pid}"
+        leader = '127.0.0.1:7001'    
 
         4.times do |n|
           client_port = 4002 + n

@@ -42,11 +42,11 @@ module Etcd
     end
 
     def machines
-      api_execute('/machines', :get).split(",")
+      api_execute( version_prefix + '/machines', :get).split(",")
     end
 
     def leader
-      api_execute('/leader', :get)
+      api_execute( version_prefix + '/leader', :get)
     end
 
     def key_endpoint

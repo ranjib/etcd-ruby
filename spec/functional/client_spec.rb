@@ -30,6 +30,7 @@ describe "Functional Test Suite" do
   let(:read_only_client) do
     Etcd.client(:allow_redirect=>false, :port=> 4004)
   end
+
  
   include_examples "read only client"
   include_examples "lock"
@@ -45,10 +46,10 @@ describe "Functional Test Suite" do
 
 
   it "#leader" do
-    expect(client.leader).to eq('0.0.0.0:7001')
+    expect(client.leader).to eq('http://127.0.0.1:7001')
   end
 
   it "#machines" do
-    expect(client.machines).to include('0.0.0.0:4001')
+    expect(client.machines).to include('http://127.0.0.1:4001')
   end
 end
