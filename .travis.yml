@@ -1,4 +1,6 @@
 before_install: 
+  - sudo add-apt-repository ppa:duh/golang
+  - sudo apt-get update
   - sudo apt-get install golang
   - mkdir etcd
   - bash -c 'cd etcd &&  GOPATH=`pwd` &&  go get github.com/coreos/etcd'
