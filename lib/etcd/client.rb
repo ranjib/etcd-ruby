@@ -57,6 +57,7 @@ module Etcd
       version_prefix + '/watch'
     end
 
+    # Set a new value for key if previous value of key is matched
     def test_and_set(key, value, prevValue, ttl = nil)
       path  = key_endpoint + key
       payload = {'value' => value, 'prevValue' => prevValue }
@@ -65,6 +66,7 @@ module Etcd
       json2obj(response)
     end
 
+    # Adds a new key with specified value and ttl, overwrites old values if exists
     def set(key, value, ttl=nil)
       path  = key_endpoint + key
       payload = {'value' => value}
@@ -79,11 +81,13 @@ module Etcd
       json2obj(response)
     end
 
+    # Retrives a key, if key is not present it will return with message "Key Not Found"
     def get(key)
       response = api_execute(key_endpoint + key, :get)
       json2obj(response)
     end
 
+    # Gives a notification when specified key changes
     def watch(key, index=nil)
       response = if index.nil?
                     api_execute(watch_endpoint + key, :get)
