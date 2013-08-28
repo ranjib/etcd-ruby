@@ -37,22 +37,27 @@ module Etcd
       end
     end
 
+    # Currently use 'v1' as version for etcd store
     def version_prefix
       '/v1'
     end
 
+    # Lists all machines in the cluster
     def machines
       api_execute( version_prefix + '/machines', :get).split(",")
     end
 
+    # Get the current leader in a cluster
     def leader
       api_execute( version_prefix + '/leader', :get)
     end
 
+    # Lists all the data (keys, dir etc) present in etcd store
     def key_endpoint
       version_prefix + '/keys'
     end
 
+    # Watches all keys and notifies if anyone changes
     def watch_endpoint
       version_prefix + '/watch'
     end
@@ -75,13 +80,13 @@ module Etcd
       json2obj(response)
     end
 
-    # Deletes a key
+    # Deletes a key along with all associated data
     def delete(key)
       response = api_execute(key_endpoint + key, :delete)
       json2obj(response)
     end
 
-    # Retrives a key, if key is not present it will return with message "Key Not Found"
+    # Retrives a key with its associated data, if key is not present it will return with message "Key Not Found"
     def get(key)
       response = api_execute(key_endpoint + key, :get)
       json2obj(response)
@@ -97,6 +102,7 @@ module Etcd
       json2obj(response)
     end
 
+    # 
     def api_execute(path, method, params=nil)
 
       http = if path=~/^http/
