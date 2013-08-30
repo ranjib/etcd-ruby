@@ -102,7 +102,7 @@ module Etcd
       json2obj(response)
     end
 
-    # 
+    # This method makes request to etcd server. The request contains path (etcd server end point), method and parameters for specified method.
     def api_execute(path, method, params=nil)
 
       http = if path=~/^http/
