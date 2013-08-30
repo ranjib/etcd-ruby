@@ -37,26 +37,32 @@ module Etcd
       end
     end
 
+    # Currently use 'v1' as version for etcd store
     def version_prefix
       '/v1'
     end
 
+    # Lists all machines in the cluster
     def machines
       api_execute( version_prefix + '/machines', :get).split(",")
     end
 
+    # Get the current leader in a cluster
     def leader
       api_execute( version_prefix + '/leader', :get)
     end
 
+    # Lists all the data (keys, dir etc) present in etcd store
     def key_endpoint
       version_prefix + '/keys'
     end
 
+    # Watches all keys and notifies if anyone changes
     def watch_endpoint
       version_prefix + '/watch'
     end
 
+    # Set a new value for key if previous value of key is matched
     def test_and_set(key, value, prevValue, ttl = nil)
       path  = key_endpoint + key
       payload = {'value' => value, 'prevValue' => prevValue }
@@ -65,6 +71,7 @@ module Etcd
       json2obj(response)
     end
 
+    # Adds a new key with specified value and ttl, overwrites old values if exists
     def set(key, value, ttl=nil)
       path  = key_endpoint + key
       payload = {'value' => value}
@@ -73,17 +80,19 @@ module Etcd
       json2obj(response)
     end
 
-
+    # Deletes a key along with all associated data
     def delete(key)
       response = api_execute(key_endpoint + key, :delete)
       json2obj(response)
     end
 
+    # Retrives a key with its associated data, if key is not present it will return with message "Key Not Found"
     def get(key)
       response = api_execute(key_endpoint + key, :get)
       json2obj(response)
     end
 
+    # Gives a notification when specified key changes
     def watch(key, index=nil)
       response = if index.nil?
                     api_execute(watch_endpoint + key, :get)
@@ -93,6 +102,7 @@ module Etcd
       json2obj(response)
     end
 
+    # This method makes request to etcd server. The request contains path (etcd server end point), method and parameters for specified method.
     def api_execute(path, method, params=nil)
 
       http = if path=~/^http/
