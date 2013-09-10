@@ -63,6 +63,12 @@ module Etcd
     end
 
     # Set a new value for key if previous value of key is matched
+    #
+    # This method takes following parameters as argument
+    # * key       - whose value is going to change if previous value is matched
+    # * value     - new value to be set for specified key
+    # * prevValue - value of a key to compare with existing value of key
+    # * ttl       - shelf life of a key (in secsonds) (optional)
     def test_and_set(key, value, prevValue, ttl = nil)
       path  = key_endpoint + key
       payload = {'value' => value, 'prevValue' => prevValue }
@@ -72,6 +78,11 @@ module Etcd
     end
 
     # Adds a new key with specified value and ttl, overwrites old values if exists
+    #
+    # This method has following parameters as argument
+    # * key   - whose value to be set
+    # * value - value to be set for specified key
+    # * ttl   - shelf life of a key (in secsonds) (optional)
     def set(key, value, ttl=nil)
       path  = key_endpoint + key
       payload = {'value' => value}
@@ -81,18 +92,28 @@ module Etcd
     end
 
     # Deletes a key along with all associated data
+    #
+    # This method has following parameters as argument
+    # * key - key to be deleted
     def delete(key)
       response = api_execute(key_endpoint + key, :delete)
       json2obj(response)
     end
 
     # Retrives a key with its associated data, if key is not present it will return with message "Key Not Found"
+    #
+    # This method has following parameters as argument
+    # * key - whose data to be retrive
     def get(key)
       response = api_execute(key_endpoint + key, :get)
       json2obj(response)
     end
 
     # Gives a notification when specified key changes
+    #
+    # This method has following parameters as argument
+    # * key   - key to be watched
+    # * index - etcd server index of specified key (optional)
     def watch(key, index=nil)
       response = if index.nil?
                     api_execute(watch_endpoint + key, :get)
@@ -102,7 +123,12 @@ module Etcd
       json2obj(response)
     end
 
-    # This method makes request to etcd server. The request contains path (etcd server end point), method and parameters for specified method.
+    # This method sends api request to etcd server.
+    #
+    # This method has following parameters as argument
+    # * path    - etcd server path (etcd server end point)
+    # * method  - the request method used
+    # * params  - any additional parameters used by request method (optional)
     def api_execute(path, method, params=nil)
 
       http = if path=~/^http/
