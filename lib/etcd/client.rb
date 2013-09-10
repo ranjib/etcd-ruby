@@ -44,7 +44,7 @@ module Etcd
 
     # Lists all machines in the cluster
     def machines
-      api_execute( version_prefix + '/machines', :get).split(",")
+      api_execute( version_prefix + '/machines', :get).split(",").map(&:strip)
     end
 
     # Get the current leader in a cluster
