@@ -115,12 +115,17 @@ module Etcd
     # * key   - key to be watched
     # * index - etcd server index of specified key (optional)
     def watch(key, index=nil)
-      response = if index.nil?
-                    api_execute(watch_endpoint + key, :get)
-                  else
-                    api_execute(watch_endpoint + key, :post, {'index' => index})
-                  end
-      json2obj(response)
+      loop do
+        begin
+          response = if index.nil?
+                        api_execute(watch_endpoint + key, :get)
+                      else
+                        api_execute(watch_endpoint + key, :post, {'index' => index})
+                      end
+          return json2obj(response)
+        rescue Timeout::Error
+        end
+      end
     end
 
     # This method sends api request to etcd server.
