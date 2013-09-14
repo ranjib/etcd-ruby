@@ -18,7 +18,7 @@ shared_examples "read only client" do
     key = random_key
     value = uuid.generate
     index = client.set(key, value).index
-    expect(read_only_client.watch(key, index).value).to eq(value)
+    expect(read_only_client.watch(key, index: index).value).to eq(value)
   end
 end
 
