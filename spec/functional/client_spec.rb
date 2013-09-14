@@ -19,6 +19,10 @@ describe "Functional Test Suite" do
     start_etcd_servers
   end
 
+  let(:etcd_servers) do
+    (1..5).map{|n| "http://127.0.0.1:700#{n}"}
+  end
+
   after(:all) do
     stop_etcd_servers
   end
@@ -46,7 +50,7 @@ describe "Functional Test Suite" do
 
 
   it "#leader" do
-    expect(client.leader).to eq('http://127.0.0.1:7001')
+    expect(etcd_servers).to include(client.leader)
   end
 
   it "#machines" do
