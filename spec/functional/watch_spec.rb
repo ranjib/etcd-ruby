@@ -7,8 +7,8 @@ shared_examples "watch" do
     index1 = client.set(key, value1).index
     index2 = client.set(key, value2).index
 
-    expect(client.watch(key, index1).value).to eq(value1)
-    expect(client.watch(key, index2).value).to eq(value2)
+    expect(client.watch(key, index: index1).value).to eq(value1)
+    expect(client.watch(key, index: index2).value).to eq(value2)
   end
 
   it "with index, waits and return when the key is updated" do
