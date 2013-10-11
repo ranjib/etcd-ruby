@@ -25,6 +25,7 @@ module Etcd
     # @param [Hash] opts The options for new Etcd::Client object
     # @opts [String] :host IP address of the etcd server (default is '127.0.0.1')
     # @opts [Fixnum] :port Port number of the etcd server (default is 4001)
+    # @opts [Fixnum] :read_timeout Set default HTTP read timeout for all api calls (default is 60)
 
     def initialize(opts={})
       @host = opts[:host] || '127.0.0.1'
@@ -73,7 +74,7 @@ module Etcd
       path  = key_endpoint + key
       payload = {'value' => value, 'prevValue' => prevValue }
       payload['ttl'] = ttl unless ttl.nil?
-      response = api_execute(path, :post, payload)
+      response = api_execute(path, :post, params: payload)
       json2obj(response)
     end
 
@@ -87,7 +88,7 @@ module Etcd
       path  = key_endpoint + key
       payload = {'value' => value}
       payload['ttl'] = ttl unless ttl.nil?
-      response = api_execute(path, :post, payload)
+      response = api_execute(path, :post, params: payload)
       json2obj(response)
     end
 
@@ -112,13 +113,17 @@ module Etcd
     # Gives a notification when specified key changes
     #
     # This method has following parameters as argument
-    # * key   - key to be watched
-    # * index - etcd server index of specified key (optional)
-    def watch(key, index=nil)
+    # @ key   - key to be watched
+    # @options [Hash] additional options for watching a key
+    # @options [Fixnum] :index watch the specified key from given index
+    # @options [Fixnum] :timeout specify http timeout (defaults to read_timeout value)
+    def watch(key, options={})
+      timeout = options[:timeout] || @read_timeout
+      index = options[:index]
       response = if index.nil?
-                    api_execute(watch_endpoint + key, :get)
+                    api_execute(watch_endpoint + key, :get, timeout: timeout)
                   else
-                    api_execute(watch_endpoint + key, :post, {'index' => index})
+                    api_execute(watch_endpoint + key, :post, timeout: timeout, params: {index: index})
                   end
       json2obj(response)
     end
@@ -128,8 +133,11 @@ module Etcd
     # This method has following parameters as argument
     # * path    - etcd server path (etcd server end point)
     # * method  - the request method used
-    # * params  - any additional parameters used by request method (optional)
-    def api_execute(path, method, params=nil)
+    # * options  - any additional parameters used by request method (optional)
+    def api_execute(path, method, options={})
+
+      params = options[:params]
+      timeout = options[:timeout] || @read_timeout
 
       http = if path=~/^http/
                 uri = URI.parse(path)
@@ -138,7 +146,7 @@ module Etcd
               else
                 Net::HTTP.new(host, port)
               end
-      http.read_timeout = @read_timeout
+      http.read_timeout = timeout
 
       case  method
       when :get
@@ -168,7 +176,7 @@ module Etcd
         res.body
       elsif redirect?(res.code.to_i) and allow_redirect
         Log.debug("Http redirect, following")
-        api_execute(res['location'], method, params)
+        api_execute(res['location'], method, params: params)
       else
         Log.debug("Http error")
         Log.debug(res.body)
