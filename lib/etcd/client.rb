@@ -33,7 +33,7 @@ module Etcd
       @read_timeout = opts[:read_timeout] || 60
       @allow_redirect = opts.has_key?(:allow_redirect) ? opts[:allow_redirect] : true
       @use_ssl = opts.has_key?(:use_ssl) ? opts[:use_ssl] : false
-      @verify_mode = OpenSSL::SSL::VERIFY_PEER
+      @verify_mode = opts[:verify_mode] || OpenSSL::SSL::VERIFY_PEER
     end
 
     # Currently use 'v1' as version for etcd store
@@ -145,6 +145,8 @@ module Etcd
                 Net::HTTP.new(host, port)
               end
       http.read_timeout = timeout
+      http.use_ssl = use_ssl
+      http.verify_mode = verify_mode
 
       case  method
       when :get
