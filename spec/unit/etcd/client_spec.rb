@@ -13,14 +13,14 @@ describe Etcd::Client do
   end
 
   it "should have SSL turned off by default" do
-    expect(client.use_ssl).to eq(false)
+    expect(client.use_ssl).to be_false
   end
 
   it "should have SSL verification turned on by default" do
     expect(client.verify_mode).to eq(OpenSSL::SSL::VERIFY_PEER)
   end
 
-  it "shlould follow redirection by default" do
+  it "should follow redirection by default" do
     expect(client.allow_redirect).to be_true
   end
 
