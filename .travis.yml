@@ -1,4 +1,5 @@
 before_install: 
+  - sudo apt-get update -y
   - sudo add-apt-repository ppa:duh/golang -y
   - sudo apt-get update -y
   - sudo apt-get install golang -y
