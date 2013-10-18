@@ -17,7 +17,7 @@ module Etcd
     include Etcd::Helpers
     include Etcd::Lockable
 
-    attr_reader :host, :port, :http, :allow_redirect
+    attr_reader :host, :port, :http, :allow_redirect, :use_ssl
 
     ##
     # Creates a new instance of Etcd::Client. It accepts a hash +opts+ as argument
@@ -31,11 +31,8 @@ module Etcd
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
       @read_timeout = opts[:read_timeout] || 60
-      if opts.has_key?(:allow_redirect)
-        @allow_redirect = opts[:allow_redirect]
-      else
-        @allow_redirect = true
-      end
+      @allow_redirect = opts.has_key?(:allow_redirect) ? opts[:allow_redirect] : true
+      @use_ssl = opts.has_key?(:use_ssl) ? opts[:use_ssl] : false
     end
 
     # Currently use 'v1' as version for etcd store

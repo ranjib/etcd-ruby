@@ -12,6 +12,10 @@ describe Etcd::Client do
     expect(client.port).to eq(4001)
   end
 
+  it "should have SSL turned off by default" do
+    expect(client.use_ssl).to eq(false)
+  end
+
   it "shlould follow redirection by default" do
     expect(client.allow_redirect).to be_true
   end
