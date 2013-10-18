@@ -32,7 +32,7 @@ module Etcd
       @port = opts[:port] || 4001
       @read_timeout = opts[:read_timeout] || 60
       @allow_redirect = opts.has_key?(:allow_redirect) ? opts[:allow_redirect] : true
-      @use_ssl = opts.has_key?(:use_ssl) ? opts[:use_ssl] : false
+      @use_ssl = opts[:use_ssl] || false
       @verify_mode = opts[:verify_mode] || OpenSSL::SSL::VERIFY_PEER
     end
 
