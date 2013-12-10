@@ -36,9 +36,9 @@ module Etcd
       @verify_mode = opts[:verify_mode] || OpenSSL::SSL::VERIFY_PEER
     end
 
-    # Currently use 'v1' as version for etcd store
+    # Currently use 'v2' as version for etcd store
     def version_prefix
-      '/v1'
+      '/v2'
     end
 
     # Lists all machines in the cluster
@@ -72,7 +72,24 @@ module Etcd
       path  = key_endpoint + key
       payload = {'value' => value, 'prevValue' => prevValue }
       payload['ttl'] = ttl unless ttl.nil?
-      response = api_execute(path, :post, params: payload)
+      response = api_execute(path, :put, params: payload)
+      json2obj(response)
+    end
+
+
+    def create(key, value, ttl = nil)
+      path  = key_endpoint + key
+      payload = {value: value, prevExist: false }
+      payload['ttl'] = ttl unless ttl.nil?
+      response = api_execute(path, :put, params: payload)
+      json2obj(response)
+    end
+
+    def update(key, value, ttl = nil)
+      path  = key_endpoint + key
+      payload = {value: value, prevExist: true }
+      payload['ttl'] = ttl unless ttl.nil?
+      response = api_execute(path, :put, params: payload)
       json2obj(response)
     end
 
@@ -86,7 +103,7 @@ module Etcd
       path  = key_endpoint + key
       payload = {'value' => value}
       payload['ttl'] = ttl unless ttl.nil?
-      response = api_execute(path, :post, params: payload)
+      response = api_execute(path, :put, params: payload)
       json2obj(response)
     end
 
@@ -94,8 +111,8 @@ module Etcd
     #
     # This method has following parameters as argument
     # * key - key to be deleted
-    def delete(key)
-      response = api_execute(key_endpoint + key, :delete)
+    def delete(key,opts={})
+      response = api_execute(key_endpoint + key, :delete, params:opts)
       json2obj(response)
     end
 
@@ -103,8 +120,8 @@ module Etcd
     #
     # This method has following parameters as argument
     # * key - whose data to be retrive
-    def get(key)
-      response = api_execute(key_endpoint + key, :get)
+    def get(key, opts={})
+      response = api_execute(key_endpoint + key, :get, params:opts)
       json2obj(response)
     end
 
@@ -117,11 +134,11 @@ module Etcd
     # @options [Fixnum] :timeout specify http timeout (defaults to read_timeout value)
     def watch(key, options={})
       timeout = options[:timeout] || @read_timeout
-      index = options[:index]
+      index = options[:waitIndex] || options[:index]
       response = if index.nil?
-                    api_execute(watch_endpoint + key, :get, timeout: timeout)
+                    api_execute(key_endpoint + key, :get, timeout: timeout, params:{wait: true})
                   else
-                    api_execute(watch_endpoint + key, :post, timeout: timeout, params: {index: index})
+                    api_execute(key_endpoint + key, :get, timeout: timeout, params: {wait: true, waitIndex: index})
                   end
       json2obj(response)
     end
@@ -160,12 +177,19 @@ module Etcd
         req = Net::HTTP::Post.new(path)
         req.body= encoded_params
         Log.debug("Setting body for post '#{encoded_params}'")
+      when :put
+        encoded_params = URI.encode_www_form(params)
+        req = Net::HTTP::Put.new(path)
+        req.body= encoded_params
+        Log.debug("Setting body for put '#{encoded_params}'")
       when :delete
         unless params.nil?
           encoded_params = URI.encode_www_form(params)
           path+= "?" + encoded_params
         end
         req = Net::HTTP::Delete.new(path)
+      else
+        raise "Unknown http action: #{method}"
       end
 
       Log.debug("Invoking: '#{req.class}' against '#{path}")
@@ -191,11 +215,21 @@ module Etcd
 
     def json2obj(json)
       obj = JSON.parse(json)
-      if obj.is_a?(Array)
-        obj.map{|e| OpenStruct.new(e)}
+      if obj.has_key?('nodes')
+        obj.map do |e|
+          node2obj(e)
+        end
       else
-        OpenStruct.new(obj)
+        node2obj(obj)
       end
+    end
+
+    def node2obj(hash)
+      h = hash.dup
+      h[:value] = h['node']['value'] if h.has_key?('node') and h['node'].has_key?('value')
+      o = OpenStruct.new(h)
+      o.node = OpenStruct.new(o.node) if h.has_key?('node')
+      o
     end
   end
 end

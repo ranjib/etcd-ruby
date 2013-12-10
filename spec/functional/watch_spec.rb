@@ -4,8 +4,8 @@ shared_examples "watch" do
     value1 = uuid.generate
     value2 = uuid.generate
 
-    index1 = client.set(key, value1).index
-    index2 = client.set(key, value2).index
+    index1 = client.create(key, value1).node.modifiedIndex
+    index2 = client.test_and_set(key, value2, value1).node.modifiedIndex
 
     expect(client.watch(key, index: index1).value).to eq(value1)
     expect(client.watch(key, index: index2).value).to eq(value2)
