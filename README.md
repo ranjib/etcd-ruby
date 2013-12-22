@@ -20,9 +20,9 @@ Or install it yourself as:
 ### Create a client object
 ```ruby
 client = Etcd.client # this will create a client against etcd server running on localhost on port 4001
-client = Etcd.client(:port=>4002)
-client = Etcd.client(:host=>'127.0.0.1', :port=>4003)
-client = Etcd.client(:host=>'127.0.0.1', :port=>4003, :allow_redirect => false) # wont let you run sensitive commands on non-leader machines, default is true
+client = Etcd.client(port: 4002)
+client = Etcd.client(host: '127.0.0.1', port: 4003)
+client = Etcd.client(host: '127.0.0.1', port: 4003, allow_redirect: false) # wont let you run sensitive commands on non-leader machines, default is true
 ```
 ### Set a key
 ```ruby
