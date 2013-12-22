@@ -38,6 +38,7 @@ client.get('/nodes/n2').value
 ### Delete a key
 ```ruby
 client.delete('/nodes/n1')
+client.delete('/nodes/', recursive: true)
 ```
 
 ### Test and set
