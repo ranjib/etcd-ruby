@@ -5,6 +5,8 @@ module Etcd
   module FunctionalSpec
     module Helpers
 
+      @@pids =  []
+
       def self.etcd_binary
         if File.exists? './etcd'
           './etcd'
