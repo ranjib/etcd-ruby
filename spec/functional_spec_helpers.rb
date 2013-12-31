@@ -8,8 +8,8 @@ module Etcd
       @@pids =  []
 
       def self.etcd_binary
-        if File.exists? './etcd'
-          './etcd'
+        if File.exists? './etcd/etcd'
+          './etcd/etcd'
         elsif !! ENV['ETCD_BIN']
           ENV['ETCD_BIN']
         else
@@ -22,11 +22,11 @@ module Etcd
         pid = spawn_etcd_server(@@tmpdir+'/leader')
         @@pids =  Array(pid)
         puts "Etcd leader process id :#{pid}"
-        leader = '127.0.0.1:70001'
+        leader = '127.0.0.1:7001'
 
         4.times do |n|
-          client_port = 40002 + n
-          server_port = 70002 + n
+          client_port = 4002 + n
+          server_port = 7002 + n
           pid = spawn_etcd_server(@@tmpdir+client_port.to_s, client_port, server_port, leader)
           @@pids << pid
         end
@@ -40,7 +40,7 @@ module Etcd
         FileUtils.remove_entry_secure @@tmpdir
       end
 
-      def self.spawn_etcd_server(dir, client_port=40001, server_port=70001, leader = nil)
+      def self.spawn_etcd_server(dir, client_port=4001, server_port=7001, leader = nil)
         args = " -addr 127.0.0.1:#{client_port} -peer-addr 127.0.0.1:#{server_port} -data-dir #{dir} -name node_#{client_port}"
         command = if leader.nil?
                     etcd_binary + args
