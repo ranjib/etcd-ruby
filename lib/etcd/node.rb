@@ -1,0 +1,38 @@
+
+module Etcd
+  class Node
+
+    attr_reader :created_index, :modified_index, :expiration, :ttl, :key, :value
+    alias :createdIndex :created_index
+    alias :modifiedIndex :modified_index
+
+    def initialize(opts={})
+
+      @created_index = opts['createdIndex']
+      @modified_index = opts['modifiedIndex']
+      @ttl = opts['ttl']
+      @key = opts['key']
+      @value = opts['value']
+      @expiration = opts['expiration']
+      @dir = opts['dir']
+
+      if opts['dir']
+        opts['nodes'].each do |data|
+          children << Node.new(data)
+        end
+      end
+    end
+
+    def children
+      if directory?
+        @children ||= []
+      else
+        raise "This is not a directory, cant have children"
+      end
+    end
+
+    def directory?
+      !! @dir
+    end
+  end
+end

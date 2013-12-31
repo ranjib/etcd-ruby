@@ -3,7 +3,7 @@ require 'json'
 require 'etcd/log'
 require 'etcd/mixins/helpers'
 require 'etcd/mixins/lockable'
-require 'ostruct'
+require 'etcd/response'
 
 
 module Etcd
@@ -73,7 +73,7 @@ module Etcd
       payload = {'value' => value, 'prevValue' => prevValue }
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :put, params: payload)
-      json2obj(response)
+      Response.from_json(response)
     end
 
 
@@ -82,7 +82,7 @@ module Etcd
       payload = {value: value, prevExist: false }
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :put, params: payload)
-      json2obj(response)
+      Response.from_json(response)
     end
 
     def update(key, value, ttl = nil)
@@ -90,7 +90,7 @@ module Etcd
       payload = {value: value, prevExist: true }
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :put, params: payload)
-      json2obj(response)
+      Response.from_json(response)
     end
 
     # Adds a new key with specified value and ttl, overwrites old values if exists
@@ -104,7 +104,7 @@ module Etcd
       payload = {'value' => value}
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :put, params: payload)
-      json2obj(response)
+      Response.from_json(response)
     end
 
     # Deletes a key along with all associated data
@@ -113,7 +113,7 @@ module Etcd
     # * key - key to be deleted
     def delete(key,opts={})
       response = api_execute(key_endpoint + key, :delete, params:opts)
-      json2obj(response)
+      Response.from_json(response)
     end
 
     # Retrives a key with its associated data, if key is not present it will return with message "Key Not Found"
@@ -122,7 +122,7 @@ module Etcd
     # * key - whose data to be retrive
     def get(key, opts={})
       response = api_execute(key_endpoint + key, :get, params:opts)
-      json2obj(response)
+      Response.from_json(response)
     end
 
     # Gives a notification when specified key changes
@@ -140,7 +140,7 @@ module Etcd
                   else
                     api_execute(key_endpoint + key, :get, timeout: timeout, params: {wait: true, waitIndex: index})
                   end
-      json2obj(response)
+      Response.from_json(response)
     end
 
     # This method sends api request to etcd server.
@@ -209,27 +209,9 @@ module Etcd
     end
 
     private
+
     def redirect?(code)
       (code >= 300) and (code < 400)
-    end
-
-    def json2obj(json)
-      obj = JSON.parse(json)
-      if obj.has_key?('nodes')
-        obj.map do |e|
-          node2obj(e)
-        end
-      else
-        node2obj(obj)
-      end
-    end
-
-    def node2obj(hash)
-      h = hash.dup
-      h[:value] = h['node']['value'] if h.has_key?('node') and h['node'].has_key?('value')
-      o = OpenStruct.new(h)
-      o.node = OpenStruct.new(o.node) if h.has_key?('node')
-      o
     end
   end
 end
