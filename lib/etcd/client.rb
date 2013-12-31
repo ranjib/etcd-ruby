@@ -43,12 +43,12 @@ module Etcd
 
     # Lists all machines in the cluster
     def machines
-      api_execute( version_prefix + '/machines', :get).split(",").map(&:strip)
+      api_execute( version_prefix + '/machines', :get).body.split(",").map(&:strip)
     end
 
     # Get the current leader in a cluster
     def leader
-      api_execute( version_prefix + '/leader', :get)
+      api_execute( version_prefix + '/leader', :get).body
     end
 
     # Lists all the data (keys, dir etc) present in etcd store
@@ -73,7 +73,7 @@ module Etcd
       payload = {'value' => value, 'prevValue' => prevValue }
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :put, params: payload)
-      Response.from_json(response)
+      Response.from_http_response(response)
     end
 
 
@@ -82,7 +82,15 @@ module Etcd
       payload = {value: value, prevExist: false }
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :put, params: payload)
-      Response.from_json(response)
+      Response.from_http_response(response)
+    end
+
+    def atomic_create(key, value, ttl = nil)
+      path  = key_endpoint + key
+      payload = {value: value }
+      payload['ttl'] = ttl unless ttl.nil?
+      response = api_execute(path, :post, params: payload)
+      Response.from_http_response(response)
     end
 
     def update(key, value, ttl = nil)
@@ -90,7 +98,7 @@ module Etcd
       payload = {value: value, prevExist: true }
       payload['ttl'] = ttl unless ttl.nil?
       response = api_execute(path, :put, params: payload)
-      Response.from_json(response)
+      Response.from_http_response(response)
     end
 
     # Adds a new key with specified value and ttl, overwrites old values if exists
@@ -99,12 +107,29 @@ module Etcd
     # * key   - whose value to be set
     # * value - value to be set for specified key
     # * ttl   - shelf life of a key (in secsonds) (optional)
-    def set(key, value, ttl=nil)
+    def set(key, value, opts = nil)
       path  = key_endpoint + key
-      payload = {'value' => value}
-      payload['ttl'] = ttl unless ttl.nil?
+      payload = {}
+      if value.is_a?(Hash) # directory
+        opts = value.dup
+      else
+        payload['value'] = value 
+      end
+      if opts.is_a? Fixnum
+        payload['ttl'] = opts
+      elsif opts.is_a? Hash
+        payload['ttl'] = opts[:ttl] if opts.has_key?(:ttl)
+        payload['dir'] = opts[:dir] if opts.has_key?(:dir)
+        payload['prevExist'] = opts[:prevExist] if opts.has_key?(:prevExist)
+        payload['prevValue'] = opts[:prevValue] if opts.has_key?(:prevValue)
+        payload['prevIndex'] = opts[:prevIndex] if opts.has_key?(:prevIndex)
+      elsif opts.nil?
+        # do nothing
+      else
+        raise ArgumentError, "Dont know how to parse #{opts}"
+      end
       response = api_execute(path, :put, params: payload)
-      Response.from_json(response)
+      Response.from_http_response(response)
     end
 
     # Deletes a key along with all associated data
@@ -113,7 +138,7 @@ module Etcd
     # * key - key to be deleted
     def delete(key,opts={})
       response = api_execute(key_endpoint + key, :delete, params:opts)
-      Response.from_json(response)
+      Response.from_http_response(response)
     end
 
     # Retrives a key with its associated data, if key is not present it will return with message "Key Not Found"
@@ -122,7 +147,7 @@ module Etcd
     # * key - whose data to be retrive
     def get(key, opts={})
       response = api_execute(key_endpoint + key, :get, params:opts)
-      Response.from_json(response)
+      Response.from_http_response(response)
     end
 
     # Gives a notification when specified key changes
@@ -133,14 +158,15 @@ module Etcd
     # @options [Fixnum] :index watch the specified key from given index
     # @options [Fixnum] :timeout specify http timeout (defaults to read_timeout value)
     def watch(key, options={})
+
+      params ={wait: true}
       timeout = options[:timeout] || @read_timeout
       index = options[:waitIndex] || options[:index]
-      response = if index.nil?
-                    api_execute(key_endpoint + key, :get, timeout: timeout, params:{wait: true})
-                  else
-                    api_execute(key_endpoint + key, :get, timeout: timeout, params: {wait: true, waitIndex: index})
-                  end
-      Response.from_json(response)
+      params[:waitIndex] = index unless index.nil?
+      params[:consistent] = options[:consistent] if options.has_key?(:consistent)
+        
+      response = api_execute(key_endpoint + key, :get, timeout: timeout, params: params)
+      Response.from_http_response(response)
     end
 
     # This method sends api request to etcd server.
@@ -197,7 +223,7 @@ module Etcd
       Log.debug("Response code: #{res.code}")
       if res.is_a?(Net::HTTPSuccess)
         Log.debug("Http success")
-        res.body
+        res
       elsif redirect?(res.code.to_i) and allow_redirect
         Log.debug("Http redirect, following")
         api_execute(res['location'], method, params: params)
