@@ -2,6 +2,8 @@
 module Etcd
   class Node
 
+    include Comparable
+
     attr_reader :created_index, :modified_index, :expiration, :ttl, :key, :value
     alias :createdIndex :created_index
     alias :modifiedIndex :modified_index
@@ -16,11 +18,15 @@ module Etcd
       @expiration = opts['expiration']
       @dir = opts['dir']
 
-      if opts['dir']
+      if opts['dir'] and (!!opts['nodes'])
         opts['nodes'].each do |data|
           children << Node.new(data)
         end
       end
+    end
+
+    def <=>(other)
+      key <=> other.key
     end
 
     def children

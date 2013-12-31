@@ -2,13 +2,12 @@ require 'uuid'
 
 module Etcd
   class Lock
+
     class AcqusitionFailure < StandardError; end
     class ReleaseFailure < StandardError; end
 
-
     attr_reader :lock_id, :key, :value, :client
     attr_reader :retries, :retry_interval, :attempts
-
 
     def initialize(opts={})
       @client = opts[:client]
