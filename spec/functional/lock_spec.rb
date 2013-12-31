@@ -1,8 +1,7 @@
-shared_examples "lock" do
+require 'functional_spec_helpers'
 
-  let(:other_client) do
-    Etcd.client
-  end
+describe "Etcd lock" do
+
 
   it "if the lock is already aquired then another lock acquisition should fail" do
     key = random_key(4)

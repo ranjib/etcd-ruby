@@ -1,4 +1,7 @@
-shared_examples "test_and_set" do
+require 'functional_spec_helpers'
+
+describe "Etcd test_and_set" do
+
   it "should pass when prev value is correct" do
     key = random_key(2)
     old_value = uuid.generate
@@ -41,4 +44,3 @@ shared_examples "test_and_set" do
     }.to_not raise_error
   end
 end
-

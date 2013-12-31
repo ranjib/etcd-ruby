@@ -1,4 +1,7 @@
-shared_examples "read only client" do
+require 'functional_spec_helpers'
+
+describe "Etcd read only client" do
+
   it "should not allow write" do
     key= random_key
     expect{
@@ -17,7 +20,7 @@ shared_examples "read only client" do
   it "should allow watch" do
     key = random_key
     value = uuid.generate
-    index = client.set(key, value).index
+    index = client.set(key, value).node.modified_index
     expect(read_only_client.watch(key, index: index).value).to eq(value)
   end
 end
