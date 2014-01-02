@@ -15,7 +15,7 @@ describe "Etcd test_and_set" do
     key = random_key(2)
     value = uuid.generate
     client.set(key, value)
-    expect{ client.test_and_set(key, 10, 2)}.to raise_error(Net::HTTPServerException)
+    expect{ client.test_and_set(key, 10, 2)}.to raise_error(Etcd::TestFailed)
   end
 
   it "#create should succeed when the key is absent and update should fail" do
