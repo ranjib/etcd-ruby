@@ -4,6 +4,7 @@ require 'etcd/log'
 require 'etcd/mixins/helpers'
 require 'etcd/mixins/lockable'
 require 'etcd/response'
+require 'etcd/stats'
 require 'etcd/exceptions'
 
 module Etcd
@@ -18,6 +19,7 @@ module Etcd
     HTTP_SUCCESS = ->(r){ r.is_a? Net::HTTPSuccess }
     HTTP_CLIENT_ERROR = ->(r){ r.is_a? Net::HTTPClientError }
 
+    include Etcd::Stats
     include Etcd::Helpers
     include Etcd::Lockable
 
@@ -44,6 +46,11 @@ module Etcd
     def version_prefix
       '/v2'
     end
+
+    def version
+      get('/version')
+    end
+
 
     # Lists all machines in the cluster
     def machines
