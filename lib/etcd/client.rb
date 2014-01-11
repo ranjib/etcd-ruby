@@ -5,7 +5,7 @@ require 'etcd/mixins/helpers'
 require 'etcd/mixins/lockable'
 require 'etcd/response'
 require 'etcd/stats'
-
+require 'etcd/exceptions'
 
 module Etcd
   ##
@@ -14,6 +14,10 @@ module Etcd
   # and Etcd::Client#eternal_watch, they are defined in separate modules and included in this
   # class
   class Client
+
+    HTTP_REDIRECT = ->(r){ r.is_a? Net::HTTPRedirection }
+    HTTP_SUCCESS = ->(r){ r.is_a? Net::HTTPSuccess }
+    HTTP_CLIENT_ERROR = ->(r){ r.is_a? Net::HTTPClientError }
 
     include Etcd::Stats
     include Etcd::Helpers
@@ -228,12 +232,21 @@ module Etcd
       Log.debug("Invoking: '#{req.class}' against '#{path}")
       res = http.request(req)
       Log.debug("Response code: #{res.code}")
-      if res.is_a?(Net::HTTPSuccess)
+
+      case res
+      when HTTP_SUCCESS
         Log.debug("Http success")
         res
-      elsif redirect?(res.code.to_i) and allow_redirect
-        Log.debug("Http redirect, following")
-        api_execute(res['location'], method, params: params)
+      when HTTP_REDIRECT
+        if allow_redirect
+          Log.debug("Http redirect, following")
+          api_execute(res['location'], method, params: params)
+        else
+          Log.debug("Http redirect not allowed")
+          res.error!
+        end
+      when HTTP_CLIENT_ERROR
+        raise Error.from_http_response(res)
       else
         Log.debug("Http error")
         Log.debug(res.body)

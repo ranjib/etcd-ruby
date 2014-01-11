@@ -19,10 +19,10 @@ describe 'stats' do
 
   it 'should show self statsistics' do
     expect(client.stats(:self)['name']).to_not be_nil
-    expect(client.stats(:self)['leader']).to_not be_nil
+    expect(client.stats(:self)['state']).to_not be_nil
   end
 
   it 'should show store statistics' do
-    expect(client.stats(:store).keys.size).to_not be_empty
+    expect(client.stats(:store).keys).to_not be_empty
   end
 end
