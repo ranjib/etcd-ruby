@@ -1,8 +1,5 @@
+go: 1.2
 before_install: 
-  - sudo apt-get update -y
-  - sudo add-apt-repository ppa:duh/golang -y
-  - sudo apt-get update -y
-  - sudo apt-get install golang -y
   - git clone https://github.com/coreos/etcd
   - cd etcd && bash build
   - bundle install --path .bundle
