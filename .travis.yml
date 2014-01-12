@@ -1,7 +1,8 @@
-go: 1.2
-before_install: 
+before_install:
+  - wget -c https://go.googlecode.com/files/go1.2.linux-amd64.tar.gz
+  - tar -zxf go1.2.linux-amd64.tar.gz
   - git clone https://github.com/coreos/etcd
-  - cd etcd && bash build
+  - cd etcd && env GOROOT=../go PATH=$PATH:../go/bin bash build
   - bundle install --path .bundle
 rvm:
   - 1.9.3
