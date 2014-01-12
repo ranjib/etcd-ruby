@@ -1,7 +1,5 @@
-go: 1.2
-before_install: 
-  - git clone https://github.com/coreos/etcd
-  - cd etcd && bash build
+before_install:
+  - bash build_etcd
   - bundle install --path .bundle
 rvm:
   - 1.9.3
