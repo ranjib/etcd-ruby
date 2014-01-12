@@ -1,3 +1,5 @@
+
+require 'coco'
 require 'uuid'
 require 'etcd'
 

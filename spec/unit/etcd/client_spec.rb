@@ -79,5 +79,5 @@ describe Etcd::Client do
     client.delete('/foo')
   end
 
-  it_should_behave_like Etcd::Helpers
+  it_should_behave_like 'helper methods'
 end
