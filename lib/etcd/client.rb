@@ -1,11 +1,10 @@
 require 'net/http'
 require 'json'
 require 'etcd/log'
-require 'etcd/mixins/helpers'
-require 'etcd/mixins/lockable'
-require 'etcd/response'
 require 'etcd/stats'
+require 'etcd/keys'
 require 'etcd/exceptions'
+require 'etcd/mod/lock'
 
 module Etcd
   ##
@@ -19,11 +18,11 @@ module Etcd
     HTTP_SUCCESS = ->(r){ r.is_a? Net::HTTPSuccess }
     HTTP_CLIENT_ERROR = ->(r){ r.is_a? Net::HTTPClientError }
 
-    include Etcd::Stats
-    include Etcd::Helpers
-    include Etcd::Lockable
+    include Stats
+    include Keys
+    include Mod::Lock
 
-    attr_reader :host, :port, :http, :allow_redirect, :use_ssl, :verify_mode
+    attr_reader :host, :port, :http, :allow_redirect, :use_ssl, :verify_mode, :read_timeout
 
     ##
     # Creates a new instance of Etcd::Client. It accepts a hash +opts+ as argument
@@ -32,7 +31,6 @@ module Etcd
     # @opts [String] :host IP address of the etcd server (default is '127.0.0.1')
     # @opts [Fixnum] :port Port number of the etcd server (default is 4001)
     # @opts [Fixnum] :read_timeout Set default HTTP read timeout for all api calls (default is 60)
-
     def initialize(opts={})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
@@ -42,15 +40,15 @@ module Etcd
       @verify_mode = opts[:verify_mode] || OpenSSL::SSL::VERIFY_PEER
     end
 
-    # Currently use 'v2' as version for etcd store
+    # Returns the etcd api version that will be used for across API methods
     def version_prefix
       '/v2'
     end
 
+    # Return the etcd cluster version
     def version
-      get('/version')
+      api_execute('/version', :get).body
     end
-
 
     # Lists all machines in the cluster
     def machines
@@ -59,125 +57,7 @@ module Etcd
 
     # Get the current leader in a cluster
     def leader
-      api_execute( version_prefix + '/leader', :get).body
-    end
-
-    # Lists all the data (keys, dir etc) present in etcd store
-    def key_endpoint
-      version_prefix + '/keys'
-    end
-
-    # Watches all keys and notifies if anyone changes
-    def watch_endpoint
-      version_prefix + '/watch'
-    end
-
-    # Set a new value for key if previous value of key is matched
-    #
-    # This method takes following parameters as argument
-    # * key       - whose value is going to change if previous value is matched
-    # * value     - new value to be set for specified key
-    # * prevValue - value of a key to compare with existing value of key
-    # * ttl       - shelf life of a key (in secsonds) (optional)
-    def test_and_set(key, value, prevValue, ttl = nil)
-      path  = key_endpoint + key
-      payload = {'value' => value, 'prevValue' => prevValue }
-      payload['ttl'] = ttl unless ttl.nil?
-      response = api_execute(path, :put, params: payload)
-      Response.from_http_response(response)
-    end
-
-
-    def create(key, value, ttl = nil)
-      path  = key_endpoint + key
-      payload = {value: value, prevExist: false }
-      payload['ttl'] = ttl unless ttl.nil?
-      response = api_execute(path, :put, params: payload)
-      Response.from_http_response(response)
-    end
-
-    def atomic_create(key, value, ttl = nil)
-      path  = key_endpoint + key
-      payload = {value: value }
-      payload['ttl'] = ttl unless ttl.nil?
-      response = api_execute(path, :post, params: payload)
-      Response.from_http_response(response)
-    end
-
-    def update(key, value, ttl = nil)
-      path  = key_endpoint + key
-      payload = {value: value, prevExist: true }
-      payload['ttl'] = ttl unless ttl.nil?
-      response = api_execute(path, :put, params: payload)
-      Response.from_http_response(response)
-    end
-
-    # Adds a new key with specified value and ttl, overwrites old values if exists
-    #
-    # This method has following parameters as argument
-    # * key   - whose value to be set
-    # * value - value to be set for specified key
-    # * ttl   - shelf life of a key (in secsonds) (optional)
-    def set(key, value, opts = nil)
-      path  = key_endpoint + key
-      payload = {}
-      if value.is_a?(Hash) # directory
-        opts = value.dup
-      else
-        payload['value'] = value 
-      end
-      if opts.is_a? Fixnum
-        payload['ttl'] = opts
-      elsif opts.is_a? Hash
-        payload['ttl'] = opts[:ttl] if opts.has_key?(:ttl)
-        payload['dir'] = opts[:dir] if opts.has_key?(:dir)
-        payload['prevExist'] = opts[:prevExist] if opts.has_key?(:prevExist)
-        payload['prevValue'] = opts[:prevValue] if opts.has_key?(:prevValue)
-        payload['prevIndex'] = opts[:prevIndex] if opts.has_key?(:prevIndex)
-      elsif opts.nil?
-        # do nothing
-      else
-        raise ArgumentError, "Dont know how to parse #{opts}"
-      end
-      response = api_execute(path, :put, params: payload)
-      Response.from_http_response(response)
-    end
-
-    # Deletes a key along with all associated data
-    #
-    # This method has following parameters as argument
-    # * key - key to be deleted
-    def delete(key,opts={})
-      response = api_execute(key_endpoint + key, :delete, params:opts)
-      Response.from_http_response(response)
-    end
-
-    # Retrives a key with its associated data, if key is not present it will return with message "Key Not Found"
-    #
-    # This method has following parameters as argument
-    # * key - whose data to be retrive
-    def get(key, opts={})
-      response = api_execute(key_endpoint + key, :get, params:opts)
-      Response.from_http_response(response)
-    end
-
-    # Gives a notification when specified key changes
-    #
-    # This method has following parameters as argument
-    # @ key   - key to be watched
-    # @options [Hash] additional options for watching a key
-    # @options [Fixnum] :index watch the specified key from given index
-    # @options [Fixnum] :timeout specify http timeout (defaults to read_timeout value)
-    def watch(key, options={})
-
-      params ={wait: true}
-      timeout = options[:timeout] || @read_timeout
-      index = options[:waitIndex] || options[:index]
-      params[:waitIndex] = index unless index.nil?
-      params[:consistent] = options[:consistent] if options.has_key?(:consistent)
-        
-      response = api_execute(key_endpoint + key, :get, timeout: timeout, params: params)
-      Response.from_http_response(response)
+      api_execute( version_prefix + '/leader', :get).body.strip
     end
 
     # This method sends api request to etcd server.
@@ -187,7 +67,6 @@ module Etcd
     # * method  - the request method used
     # * options  - any additional parameters used by request method (optional)
     def api_execute(path, method, options={})
-
       params = options[:params]
       timeout = options[:timeout] || @read_timeout
 
@@ -210,9 +89,11 @@ module Etcd
         end
         req = Net::HTTP::Get.new(path)
       when :post
-        encoded_params = URI.encode_www_form(params)
         req = Net::HTTP::Post.new(path)
-        req.body= encoded_params
+        unless params.nil?
+          encoded_params = URI.encode_www_form(params)
+          req.body= encoded_params
+        end
         Log.debug("Setting body for post '#{encoded_params}'")
       when :put
         encoded_params = URI.encode_www_form(params)
@@ -252,12 +133,6 @@ module Etcd
         Log.debug(res.body)
         res.error!
       end
-    end
-
-    private
-
-    def redirect?(code)
-      (code >= 300) and (code < 400)
     end
   end
 end

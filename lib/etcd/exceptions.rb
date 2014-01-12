@@ -47,26 +47,30 @@ module Etcd
   # Etcd related error
   class WatcherCleared < Error; end
   class EventIndexCleared < Error; end
-    ERROR_CODE_MAPPING = {
-      # command related error
-      100 => KeyNotFound,
-      101 => TestFailed,
-      102 => NotFile,
-      103 => NoMorePeer,
-      104 => NotDir,
-      105 => NodeExist,
-      106 => KeyIsPreserved,
-      # Post form related error
-      200 => ValueRequired,
-      201 => PrevValueRequired,
-      202 => TTLNaN,
-      203 =>IndexNaN,
-      # Raft related error
-      300 => RaftInternal,
-      301 => LeaderElect,
-      # Etcd related error
-      400 => WatcherCleared,
-      401 => EventIndexCleared
-    }
+
+  ERROR_CODE_MAPPING = {
+    # command related error
+    100 => KeyNotFound,
+    101 => TestFailed,
+    102 => NotFile,
+    103 => NoMorePeer,
+    104 => NotDir,
+    105 => NodeExist,
+    106 => KeyIsPreserved,
+
+    # Post form related error
+    200 => ValueRequired,
+    201 => PrevValueRequired,
+    202 => TTLNaN,
+    203 =>IndexNaN,
+
+    # Raft related error
+    300 => RaftInternal,
+    301 => LeaderElect,
+
+    # Etcd related error
+    400 => WatcherCleared,
+    401 => EventIndexCleared
+  }
 
 end

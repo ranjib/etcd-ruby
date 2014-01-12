@@ -18,12 +18,10 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "mixlib-cli"
   spec.add_dependency "mixlib-log"
-  spec.add_dependency "uuid"
 
+  spec.add_development_dependency "uuid"
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
-  spec.add_development_dependency "simplecov"
 end

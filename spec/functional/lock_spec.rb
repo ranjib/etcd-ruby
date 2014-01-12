@@ -1,69 +1,40 @@
 require 'functional_spec_helpers'
 
-describe "Etcd lock" do
+describe 'lock' do
 
-
-  it "if the lock is already aquired then another lock acquisition should fail" do
-    key = random_key(4)
-    value = uuid.generate
-    # initialize the lock key
-    client.set(key, value)
-    thr = Thread.new do
-      client.lock(:key=>key, :value=>value) do
-        sleep 2
-      end
-    end
-    sleep 1
-    expect {
-      other_client.lock(:key=>key, :value=> value) do
-        puts "Do something"
-      end
-    }.to raise_error(Etcd::Lock::AcqusitionFailure)
-    thr.join
+  it 'should be able to acquire a lock' do
+    expect do
+      client.acquire_lock('/my_lock',10)
+    end.to_not raise_error
   end
 
-  it "if the lock is not already aquired then new lock aquisition should pass" do
-    key = random_key(4)
-    value = uuid.generate
-    # initialize the lock key
-    client.set(key, value)
-    expect {
-      client.lock(:key=>key, :value=>value) do
-        :foo
-      end
-    }.to_not raise_error
+  it 'should be able to renew a lock based on value' do
+    client.acquire_lock('/my_lock1', 10, value: 123)
+    expect do
+      client.renew_lock('/my_lock1', 10, value: 123)
+    end.to_not raise_error
   end
 
-  it "should release the lock even if the given block raises exception" do
-    key = random_key(4)
-    value = uuid.generate
-    client.set(key, value)
-    expect {
-      client.lock(:key=>key, :value=>value) do
-        raise StandardError
-      end
-    }.to raise_error(StandardError)
-
-    expect{
-      other_client.lock(:key=>key, :value=>value) {}
-    }.to_not raise_error
+  it 'should be able to renew a lock based on index' do
+    client.acquire_lock('/my_lock2', 10)
+    index = client.get_lock('/my_lock2', field:'index')
+    expect do
+      client.renew_lock('/my_lock2', 10, index: index)
+    end.to_not raise_error
   end
 
-  it "should raise lock release exception if the lock key value is changed " do
-    key = random_key(4)
-    value = uuid.generate
-    # initialize the lock key
-    client.set(key, value)
-    thr = Thread.new do
-      expect{
-        client.lock(:key=>key, :value=>value) do
-          sleep 3
-        end
-      }.to raise_error(Etcd::Lock::ReleaseFailure)
+  it 'should be able to delete a lock based on value' do
+    client.acquire_lock('/my_lock3', 10, value: 123)
+    expect do
+      client.delete_lock('/my_lock3', value: 123)
+    end.to_not raise_error
+  end
 
-    end
-    sleep 1
-    other_client.set(key, uuid.generate)
-    thr.join
+  it 'should be able to delete a lock based on index' do
+    client.acquire_lock('/my_lock4', 10)
+    index = client.get_lock('/my_lock4', field:'index')
+    expect do
+      client.delete_lock('/my_lock4', index: index)
+    end.to_not raise_error
   end
 end
