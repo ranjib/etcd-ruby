@@ -4,12 +4,12 @@ module Etcd
   module Mod
     module Lock
 
-      def lock_endpoint
+      def mod_lock_endpoint
         '/mod/v2/lock'
       end
 
       def acquire_lock(key, ttl, opts={})
-        path = lock_endpoint + key + "?ttl=#{ttl}"
+        path = mod_lock_endpoint + key + "?ttl=#{ttl}"
         timeout = opts[:timeout] || 60
         Timeout::timeout(timeout) do
           api_execute(path, :post, params:opts)
@@ -20,7 +20,7 @@ module Etcd
         unless opts.has_key?(:index) or opts.has_key?(:value)
           raise ArgumentError, 'You mast pass index or value'
         end
-        path = lock_endpoint + key + "?ttl=#{ttl}"
+        path = mod_lock_endpoint + key + "?ttl=#{ttl}"
         timeout = opts[:timeout] || 60
         Timeout::timeout(timeout) do
           api_execute(path, :put, params:opts).body
@@ -28,14 +28,14 @@ module Etcd
       end
 
       def get_lock(key, opts={})
-        api_execute(lock_endpoint + key, :get, params:opts).body
+        api_execute(mod_lock_endpoint + key, :get, params:opts).body
       end
 
       def delete_lock(key, opts={})
         unless opts.has_key?(:index) or opts.has_key?(:value)
           raise ArgumentError, 'You must pass index or value'
         end
-        api_execute(lock_endpoint + key, :delete, params:opts)
+        api_execute(mod_lock_endpoint + key, :delete, params:opts)
       end
 
       def lock(key, ttl, opts={})

@@ -5,6 +5,7 @@ require 'etcd/stats'
 require 'etcd/keys'
 require 'etcd/exceptions'
 require 'etcd/mod/lock'
+require 'etcd/mod/leader'
 
 module Etcd
   ##
@@ -21,6 +22,7 @@ module Etcd
     include Stats
     include Keys
     include Mod::Lock
+    include Mod::Leader
 
     attr_reader :host, :port, :http, :allow_redirect, :use_ssl, :verify_mode, :read_timeout
 
