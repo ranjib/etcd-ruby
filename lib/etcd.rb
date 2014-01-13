@@ -1,10 +1,10 @@
+# Encoding: utf-8
 
+require 'etcd/client'
 ##
 # This module provides the Etcd:: name space for the gem and few 
 # factory methods for Etcd domain objects
-require 'etcd/client'
 module Etcd
-
   ##
   # Create and return a Etcd::Client object. It takes a hash +opts+
   # as an argument which gets passed to the Etcd::Client.new method

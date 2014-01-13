@@ -1,13 +1,14 @@
+# Encoding: utf-8
+
 require 'json'
 
+# Provides Etcd namespace
 module Etcd
-
+  # Represents all etcd custom errors
   class Error < StandardError
-
-
     attr_reader :cause, :error_code, :index
 
-    def initialize(opts={})
+    def initialize(opts = {})
       super(opts['message'])
       @cause = opts['cause']
       @index = opts['index']
@@ -16,12 +17,14 @@ module Etcd
 
     def self.from_http_response(response)
       opts = JSON.parse(response.body)
-      raise "Unknown error code: #{opts['errorCode']}" unless ERROR_CODE_MAPPING.has_key?(opts['errorCode'])
+      unless ERROR_CODE_MAPPING.key?(opts['errorCode'])
+        fail "Unknown error code: #{opts['errorCode']}"
+      end
       ERROR_CODE_MAPPING[opts['errorCode']].new(opts)
     end
 
     def inspect
-      "<#{self.class}: index:#{index}, code:#{error_code}, cause:'#{cause}', message: '#{message}'>"
+      "<#{self.class}: index:#{index}, code:#{error_code}, cause:'#{cause}'>"
     end
   end
 
@@ -62,7 +65,7 @@ module Etcd
     200 => ValueRequired,
     201 => PrevValueRequired,
     202 => TTLNaN,
-    203 =>IndexNaN,
+    203 => IndexNaN,
 
     # Raft related error
     300 => RaftInternal,
@@ -72,5 +75,4 @@ module Etcd
     400 => WatcherCleared,
     401 => EventIndexCleared
   }
-
 end

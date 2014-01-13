@@ -1,3 +1,5 @@
+# Encoding: utf-8
+
 require 'etcd/node'
 require 'json'
 

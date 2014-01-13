@@ -1,6 +1,12 @@
-require 'functional_spec_helpers'
+# Encoding: utf-8
+
+require 'spec_helper'
 
 describe "Etcd watch" do
+
+  let(:client) do
+    Etcd.client
+  end
 
   it "without index, returns the value at a particular index" do
     key = random_key(4)

@@ -1,6 +1,12 @@
-require 'functional_spec_helpers'
+# Encoding: utf-8
+
+require 'spec_helper'
 
 describe 'lock' do
+
+  let(:client) do
+    Etcd.client
+  end
 
   it 'should be able to acquire a lock' do
     expect do

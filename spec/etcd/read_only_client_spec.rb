@@ -1,6 +1,12 @@
-require 'functional_spec_helpers'
+# Encoding: utf-8
+
+require 'spec_helper'
 
 describe "Etcd read only client" do
+
+  let(:client) do
+    Etcd.client
+  end
 
   it "should not allow write" do
     key= random_key

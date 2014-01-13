@@ -1,6 +1,12 @@
-require 'functional_spec_helpers'
+# Encoding: utf-8
+
+require 'spec_helper'
 
 describe "Etcd test_and_set" do
+
+  let(:client) do
+    Etcd.client
+  end
 
   it "should pass when prev value is correct" do
     key = random_key(2)

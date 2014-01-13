@@ -1,3 +1,4 @@
+# Encoding: utf-8
 
 module Etcd
   class Node
@@ -9,7 +10,6 @@ module Etcd
     alias :modifiedIndex :modified_index
 
     def initialize(opts={})
-
       @created_index = opts['createdIndex']
       @modified_index = opts['modifiedIndex']
       @ttl = opts['ttl']
