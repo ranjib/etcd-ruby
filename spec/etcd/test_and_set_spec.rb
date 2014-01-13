@@ -31,7 +31,7 @@ describe "Etcd test_and_set" do
       client.update(key, value)
     }.to raise_error
     expect {
-      client.create(key, value)
+      client.create(key, value: value)
     }.to_not raise_error
     expect(client.get(key).value).to eq(value)
   end
@@ -42,7 +42,7 @@ describe "Etcd test_and_set" do
     client.set(key, 1)
 
     expect {
-      client.create(key, value)
+      client.create(key, value: value)
     }.to raise_error
 
     expect {

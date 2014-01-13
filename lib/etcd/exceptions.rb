@@ -36,6 +36,7 @@ module Etcd
   class NotDir < Error; end
   class NodeExist < Error; end
   class KeyIsPreserved < Error; end
+  class DirNotEmpty < Error; end
 
   # Post form related error
   class ValueRequired < Error; end
@@ -60,6 +61,7 @@ module Etcd
     104 => NotDir,
     105 => NodeExist,
     106 => KeyIsPreserved,
+    108 => DirNotEmpty,
 
     # Post form related error
     200 => ValueRequired,

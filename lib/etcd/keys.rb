@@ -116,10 +116,13 @@ module Etcd
       end
     end
 
-    def create(key, value, ttl = nil)
+    def create(key, opts = {})
       path  = key_endpoint + key
-      payload = { value: value, prevExist: false }
-      payload['ttl'] = ttl unless ttl.nil?
+      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      payload = { prevExist: false }
+      [:value, :ttl, :dir].each do |k|
+        payload[k] = opts[k] if opts.key?(k)
+      end
       response = api_execute(path, :put, params: payload)
       Response.from_http_response(response)
     end
