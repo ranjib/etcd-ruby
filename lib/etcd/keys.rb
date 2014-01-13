@@ -1,3 +1,5 @@
+# Encoding: utf-8
+
 require 'json'
 require 'etcd/response'
 require 'etcd/log'

@@ -1,6 +1,6 @@
-require 'functional_spec_helpers'
+require 'spec_helper'
 
-describe "Functional Test Suite" do
+describe Etcd::Keys do
 
   it "#set/#get" do
     key = random_key

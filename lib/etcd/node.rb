@@ -1,3 +1,4 @@
+# Encoding: utf-8
 
 module Etcd
   class Node

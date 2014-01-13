@@ -1,4 +1,6 @@
-require 'functional_spec_helpers'
+# Encoding: utf-8
+
+require 'spec_helper'
 
 describe "Etcd directory node" do
   it "should create a directory with parent key when nested keys are set" do

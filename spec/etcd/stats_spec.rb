@@ -1,5 +1,6 @@
+# Encoding: utf-8
 
-require 'functional_spec_helpers'
+require 'spec_helper'
 
 describe 'stats' do
   describe 'of leader' do
