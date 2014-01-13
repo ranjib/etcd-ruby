@@ -33,9 +33,9 @@ module Etcd
     # Creates an Etcd::Client object. It accepts a hash +opts+ as argument
     #
     # @param [Hash] opts The options for new Etcd::Client object
-    # @opts [String] :host IP address of the etcd server (default is '127.0.0.1')
-    # @opts [Fixnum] :port Port number of the etcd server (default is 4001)
-    # @opts [Fixnum] :read_timeout Set HTTP read timeout for api calls (default is 60)
+    # @opts [String] :host IP address of the etcd server (default 127.0.0.1)
+    # @opts [Fixnum] :port Port number of the etcd server (default 4001)
+    # @opts [Fixnum] :read_timeout set HTTP read timeouts (default 60)
     def initialize(opts = {})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
@@ -50,17 +50,17 @@ module Etcd
       '/v2'
     end
 
-    # Return the etcd cluster version
+    # Returns the etcd daemon version
     def version
       api_execute('/version', :get).body
     end
 
-    # Lists all machines in the cluster
+    # Returns array of all machines in the cluster
     def machines
       api_execute(version_prefix + '/machines', :get).body.split(',').map(&:strip)
     end
 
-    # Get the current leader in a cluster
+    # Get the current leader
     def leader
       api_execute(version_prefix + '/leader', :get).body.strip
     end
@@ -73,52 +73,30 @@ module Etcd
     # * options  - any additional parameters used by request method (optional)
     def api_execute(path, method, options = {})
       params = options[:params]
-      timeout = options[:timeout] || @read_timeout
-
-      http = if path =~ /^http/
-               uri = URI.parse(path)
-               path =  uri.path
-               Net::HTTP.new(uri.host, uri.port)
-             else
-               Net::HTTP.new(host, port)
-             end
-      http.read_timeout = timeout
-      http.use_ssl = use_ssl
-      http.verify_mode = verify_mode
-
       case  method
       when :get
-        unless params.nil?
-          encoded_params = URI.encode_www_form(params)
-          path += '?' + encoded_params
-        end
-        req = Net::HTTP::Get.new(path)
+        req = build_http_request(Net::HTTP::Get, path, params)
       when :post
-        req = Net::HTTP::Post.new(path)
-        unless params.nil?
-          encoded_params = URI.encode_www_form(params)
-          req.body = encoded_params
-        end
-        Log.debug("Setting body for post '#{encoded_params}'")
+        req = build_http_request(Net::HTTP::Post, path, nil, params)
       when :put
-        encoded_params = URI.encode_www_form(params)
-        req = Net::HTTP::Put.new(path)
-        req.body = encoded_params
-        Log.debug("Setting body for put '#{encoded_params}'")
+        req = build_http_request(Net::HTTP::Put, path, nil, params)
       when :delete
-        unless params.nil?
-          encoded_params = URI.encode_www_form(params)
-          path += '?' + encoded_params
-        end
-        req = Net::HTTP::Delete.new(path)
+        req = build_http_request(Net::HTTP::Delete, path, params)
       else
         fail "Unknown http action: #{method}"
       end
-
+      timeout = options[:timeout] || @read_timeout
+      http = Net::HTTP.new(host, port)
+      http.read_timeout = timeout
+      http.use_ssl = use_ssl
+      http.verify_mode = verify_mode
       Log.debug("Invoking: '#{req.class}' against '#{path}")
       res = http.request(req)
       Log.debug("Response code: #{res.code}")
+      process_http_request(res)
+    end
 
+    def process_http_request(res)
       case res
       when HTTP_SUCCESS
         Log.debug('Http success')
@@ -138,6 +116,14 @@ module Etcd
         Log.debug(res.body)
         res.error!
       end
+    end
+
+    def build_http_request(klass, path, params = nil, body = nil)
+      path += '?' + URI.encode_www_form(params) unless params.nil?
+      req = klass.new(path)
+      req.body = URI.encode_www_form(body) unless body.nil?
+      Etcd::Log.debug("Built #{klass} path:'#{path}'  body:'#{req.body}'")
+      req
     end
   end
 end

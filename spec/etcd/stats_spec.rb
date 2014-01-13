@@ -2,7 +2,12 @@
 
 require 'spec_helper'
 
-describe 'stats' do
+describe Etcd::Stats do
+
+  let(:client) do
+    Etcd.client
+  end
+
   describe 'of leader' do
 
     let(:stats) do
@@ -25,5 +30,11 @@ describe 'stats' do
 
   it 'should show store statistics' do
     expect(client.stats(:store).keys).to_not be_empty
+  end
+
+  it 'should raise error for invalid types' do
+    expect do
+      client.stats(:foo)
+    end.to raise_error
   end
 end

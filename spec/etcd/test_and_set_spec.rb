@@ -4,6 +4,10 @@ require 'spec_helper'
 
 describe "Etcd test_and_set" do
 
+  let(:client) do
+    Etcd.client
+  end
+
   it "should pass when prev value is correct" do
     key = random_key(2)
     old_value = uuid.generate

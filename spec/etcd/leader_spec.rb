@@ -3,6 +3,11 @@
 require 'spec_helper'
 
 describe 'mod leader' do
+
+  let(:client) do
+    Etcd.client
+  end
+
   it 'should allow setting a key value with ttl' do
     client.set_leader('/db_master1', 'db01', 10)
     expect(client.get_leader('/db_master1')).to eq('db01')

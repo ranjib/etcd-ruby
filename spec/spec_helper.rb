@@ -26,9 +26,7 @@ module Etcd
       @@tmpdir = Dir.mktmpdir
       pid = spawn_etcd_server(@@tmpdir+'/leader')
       @@pids =  Array(pid)
-      puts "Etcd leader process id :#{pid}"
       leader = '127.0.0.1:7001'
-
       4.times do |n|
         client_port = 4002 + n
         server_port = 7002 + n
@@ -39,10 +37,9 @@ module Etcd
 
     def self.stop_etcd_servers
       @@pids.each do |pid|
-        Process.kill("HUP", pid)
-        puts "Killed #{pid}"
+        Process.kill("TERM", pid)
       end
-      FileUtils.remove_entry_secure @@tmpdir
+      FileUtils.remove_entry_secure(@@tmpdir, true)
     end
 
     def self.spawn_etcd_server(dir, client_port=4001, server_port=7001, leader = nil)
@@ -52,8 +49,7 @@ module Etcd
                 else
                   etcd_binary + args + " -peers #{leader}"
                 end
-      puts command
-      pid = spawn(command)
+      pid = spawn(command, out: '/dev/null')
       Process.detach(pid)
       sleep 1
       pid
@@ -73,10 +69,6 @@ module Etcd
 
     def etcd_servers
       (1..5).map{|n| "http://127.0.0.1:700#{n}"}
-    end
-
-    def client
-      Etcd.client
     end
 
     def other_client

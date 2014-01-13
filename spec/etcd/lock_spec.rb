@@ -4,6 +4,10 @@ require 'spec_helper'
 
 describe 'lock' do
 
+  let(:client) do
+    Etcd.client
+  end
+
   it 'should be able to acquire a lock' do
     expect do
       client.acquire_lock('/my_lock',10)
