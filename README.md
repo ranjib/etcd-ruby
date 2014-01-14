@@ -66,11 +66,14 @@ client.machines
 ```ruby
 client.leader
 ```
+More examples and api details can be found in the [wiki](https://github.com/ranjib/etcd-ruby/wiki)
 
 ## Contributors 
 * Ranjib Dey
-* Jesse Nelson
-
+* [Jesse Nelson](https://github.com/spheromak)
+* [Nilesh Bairagi](https://github.com/Bairagi)
+* [Dr Nic Williams](https://github.com/drnic)
+* [Eric Buth] (https://github.com/buth)
 
 
 ## Contributing
