@@ -105,6 +105,10 @@ module Etcd
       Response.from_http_response(response)
     end
 
+    # This method checks existance of a given key and returns true if key is present
+    #
+    # This method has following parameters as argument
+    # @ key   - key to be checked
     def exists?(key)
       begin
         Etcd::Log.debug("Checking if key:' #{key}' exists")
@@ -116,6 +120,12 @@ module Etcd
       end
     end
 
+    # This method create/adds a new key
+    #
+    # This method has following parameters as argument
+    # * key       - key to be created
+    # * value     - new value to be set for specified key
+    # * ttl       - shelf life of a key (in secsonds) (optional)
     def create(key, opts = {})
       path  = key_endpoint + key
       raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
@@ -127,6 +137,12 @@ module Etcd
       Response.from_http_response(response)
     end
 
+    # This method updates an existing key
+    #
+    # This method has following parameters as argument
+    # * key       - key to be created
+    # * value     - new value to be set for existing key
+    # * ttl       - shelf life of a key (in secsonds) (optional)
     def update(key, value, ttl = nil)
       path  = key_endpoint + key
       payload = { value: value, prevExist: true }
