@@ -9,7 +9,7 @@ describe Etcd::Keys do
   it '#set/#get' do
     key = random_key
     value = uuid.generate
-    client.set(key, value)
+    client.set(key, value: value)
     expect(client.get(key).value).to eq(value)
   end
 
