@@ -60,12 +60,7 @@ module Etcd
       path  = key_endpoint + key
       raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       raise ArgumentError, 'You must pass prevValue' unless opts.key?(:prevValue)
-      payload = {}
-      [:value, :prevValue, :ttl].each do |k|
-        payload[k] = opts[k] if opts.key?(k)
-      end
-      response = api_execute(path, :put, params: payload)
-      Response.from_http_response(response)
+      set(key,opts)
     end
 
     # Gives a notification when specified key changes
@@ -111,25 +106,11 @@ module Etcd
     end
 
     def create(key, opts = {})
-      path  = key_endpoint + key
-      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
-      payload = { prevExist: false }
-      [:value, :ttl, :dir].each do |k|
-        payload[k] = opts[k] if opts.key?(k)
-      end
-      response = api_execute(path, :put, params: payload)
-      Response.from_http_response(response)
+      set(key, opts.merge({ prevExist: false}))
     end
 
     def update(key, opts = {})
-      path  = key_endpoint + key
-      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
-      payload = { prevExist: true }
-      [:value, :ttl, :dir].each do |k|
-        payload[k] = opts[k] if opts.key?(k)
-      end
-      response = api_execute(path, :put, params: payload)
-      Response.from_http_response(response)
+      set(key, opts.merge({ prevExist: true}))
     end
 
     def eternal_watch(key, index = nil)
