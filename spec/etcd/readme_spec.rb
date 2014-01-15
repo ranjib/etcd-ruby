@@ -56,7 +56,7 @@ describe 'Etcd specs for the main etcd README examples' do
     
 
     before(:all) do
-     @response = Etcd.client.set('/message', 'PinkFloyd')
+     @response = Etcd.client.set('/message', value: 'PinkFloyd')
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -70,7 +70,7 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'get a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', 'PinkFloyd')
+      Etcd.client.set('/message', value: 'PinkFloyd')
       @response = Etcd.client.get('/message')
     end
 
@@ -85,8 +85,8 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'change the value of a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', 'World')
-      @response = Etcd.client.set('/message','PinkFloyd')
+      Etcd.client.set('/message', value: 'World')
+      @response = Etcd.client.set('/message', value: 'PinkFloyd')
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -100,8 +100,8 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'delete a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', 'World')
-      Etcd.client.set('/message','PinkFloyd')
+      Etcd.client.set('/message', value: 'World')
+      Etcd.client.set('/message', value: 'PinkFloyd')
       @response = Etcd.client.delete('/message')
     end
 
@@ -116,9 +116,9 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'using ttl a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', 'World')
+      Etcd.client.set('/message', value: 'World')
       @set_time = Time.now
-      @response = Etcd.client.set('/message','PinkFloyd', 5)
+      @response = Etcd.client.set('/message', value: 'PinkFloyd', ttl: 5)
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -148,11 +148,11 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'waiting for a change against a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', 'foo')
+      Etcd.client.set('/message', value: 'foo')
       thr = Thread.new do
         @response = Etcd.client.watch('/message')
       end
-      Etcd.client.set('/message', 'PinkFloyd')
+      Etcd.client.set('/message', value: 'PinkFloyd')
       thr.join
     end
 
@@ -164,7 +164,7 @@ describe 'Etcd specs for the main etcd README examples' do
     end
 
     it 'should get the exact value by specifying a waitIndex' do
-      client.set('/message', 'someshit')
+      client.set('/message', value: 'someshit')
       w_response = client.watch('/message', index: @response.node.modified_index)
       expect(w_response.node.value).to eq('PinkFloyd')
     end
@@ -173,7 +173,7 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'atomic in-order keys' do
 
     before(:all) do
-      @response = Etcd.client.create_in_order('/queue', 'PinkFloyd')
+      @response = Etcd.client.create_in_order('/queue', value: 'PinkFloyd')
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -188,8 +188,8 @@ describe 'Etcd specs for the main etcd README examples' do
     end
 
     it 'should have the child keys as monotonically increasing' do
-      first_response = client.create_in_order('/queue', 'The Jimi Hendrix Experience')
-      second_response = client.create_in_order('/queue', 'The Doors')
+      first_response = client.create_in_order('/queue', value: 'The Jimi Hendrix Experience')
+      second_response = client.create_in_order('/queue', value: 'The Doors')
       first_key = first_response.key.split('/').last.to_i
       second_key = second_response.key.split('/').last.to_i
       expect(first_key).to be < second_key
@@ -198,7 +198,7 @@ describe 'Etcd specs for the main etcd README examples' do
     it 'should enlist all children in sorted manner' do
       responses = []
       10.times do |n|
-        responses << client.create_in_order('/queue', 'Deep Purple - Track #{n}')
+        responses << client.create_in_order('/queue', value: 'Deep Purple - Track #{n}')
       end
       directory = client.get('/queue', sorted: true)
       past_index = directory.children.index(responses.first.node)
@@ -240,7 +240,7 @@ describe 'Etcd specs for the main etcd README examples' do
     end
 
     it 'watchers should get expriy notification' do
-      client.set('/directory/a', 'Test')
+      client.set('/directory/a', value: 'Test')
       client.set('/directory', prevExist: true, dir:true, ttl:2)
       response = client.watch('/directory/a', consistent: true, timeout: 3)
       expect(response.action).to eq('expire')
@@ -256,31 +256,31 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'atomic compare and swap' do
 
     it 'should  raise error if prevExist is passed a false' do
-      client.set('/foo', 'one')
+      client.set('/foo', value:'one')
       expect do
-        client.set('/foo','three', prevExist: false)
+        client.set('/foo', value: 'three',  prevExist: false)
       end.to raise_error
     end
 
     it 'should raise error is prevValue is wrong' do
-      client.set('/foo', 'one')
+      client.set('/foo', value: 'one')
       expect do
-        client.set('/foo','three', prevValue: 'two')
+        client.set('/foo', value: 'three', prevValue: 'two')
       end.to raise_error
     end
 
     it 'should allow setting the value when prevValue is right' do
-      client.set('/foo', 'one')
-      expect(client.set('/foo','three', prevValue: 'one').value).to eq('three')
+      client.set('/foo', value: 'one')
+      expect(client.set('/foo', value: 'three', prevValue: 'one').value).to eq('three')
     end
   end
   context 'directory manipulation' do
     it 'should allow creating directory' do
-      expect(client.set('/dir',dir:true)).to be_directory
+      expect(client.set('/dir', dir:true)).to be_directory
     end
 
     it 'should allow listing directory' do
-      client.set('/foo_dir/foo','bar')
+      client.set('/foo_dir/foo', value: 'bar')
       expect(client.get('/').children.map(&:key)).to include('/foo_dir')
     end
 
@@ -301,8 +301,8 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'hidden nodes' do
 
     before(:all) do
-      Etcd.client.set('/_message', 'Hello Hidden World')
-      Etcd.client.set('/message', 'Hello World')
+      Etcd.client.set('/_message', value: 'Hello Hidden World')
+      Etcd.client.set('/message', value: 'Hello World')
     end
 
     it 'should not be visible in directory listing' do

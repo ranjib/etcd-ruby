@@ -29,14 +29,14 @@ describe Etcd::Client do
       end.to raise_error
     end
 
-    it 'should redirect api request when allo_redirect is set'
+    it 'should redirect api request when allow_redirect is set'
   end
 
   context '#http header based metadata' do
     before(:all) do
       key = random_key
       value = uuid.generate
-      @response = Etcd.client.set(key,value)
+      @response = Etcd.client.set(key, value: value)
     end
 
     it '#etcd_index' do

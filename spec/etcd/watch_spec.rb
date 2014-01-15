@@ -14,7 +14,7 @@ describe "Etcd watch" do
     value2 = uuid.generate
 
     index1 = client.create(key, value: value1).node.modifiedIndex
-    index2 = client.test_and_set(key, value2, value1).node.modifiedIndex
+    index2 = client.test_and_set(key, value: value2, prevValue: value1).node.modifiedIndex
 
     expect(client.watch(key, index: index1).node.value).to eq(value1)
     expect(client.watch(key, index: index2).node.value).to eq(value2)
@@ -27,7 +27,7 @@ describe "Etcd watch" do
     thr = Thread.new do
       response = client.watch(key)
     end
-    client.set(key, value)
+    client.set(key, value: value)
     thr.join
     expect(response.node.value).to eq(value)
   end

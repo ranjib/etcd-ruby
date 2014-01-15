@@ -10,7 +10,7 @@ describe Etcd::Node do
     parent = random_key
     child = random_key
     value = uuid.generate
-    client.set(parent+child, value)
+    client.set(parent+child, value: value)
     expect(client.get(parent+child)).to_not be_directory
     expect(client.get(parent)).to be_directory
   end

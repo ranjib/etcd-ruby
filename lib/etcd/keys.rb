@@ -29,26 +29,12 @@ module Etcd
     # * key   - whose value to be set
     # * value - value to be set for specified key
     # * ttl   - shelf life of a key (in secsonds) (optional)
-    def set(key, value, opts = nil)
+    def set(key, opts = nil)
+      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       path  = key_endpoint + key
       payload = {}
-      if value.is_a?(Hash) # directory
-        opts = value.dup
-      else
-        payload['value'] = value
-      end
-      if opts.is_a? Fixnum
-        warn '[DEPRECATION] Passing ttl as raw argument is deprecated \
-        please use :ttl => value, this will be removed in next minor release'
-        payload['ttl'] = opts
-      elsif opts.is_a? Hash
-        [:ttl, :dir, :prevExist, :prevValue, :prevIndex].each do |k|
-          payload[k] = opts[k] if opts.key?(k)
-        end
-      elsif opts.nil?
-        # do nothing
-      else
-        fail ArgumentError, "Dont know how to parse #{opts}"
+      [:ttl, :value, :dir, :prevExist, :prevValue, :prevIndex].each do |k|
+        payload[k] = opts[k] if opts.key?(k)
       end
       response = api_execute(path, :put, params: payload)
       Response.from_http_response(response)
@@ -70,10 +56,14 @@ module Etcd
     # * value     - new value to be set for specified key
     # * prevValue - value of a key to compare with existing value of key
     # * ttl       - shelf life of a key (in secsonds) (optional)
-    def compare_and_swap(key, value, prevValue, ttl = nil)
+    def compare_and_swap(key,opts= {})
       path  = key_endpoint + key
-      payload = { 'value' => value, 'prevValue' => prevValue }
-      payload['ttl'] = ttl unless ttl.nil?
+      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      raise ArgumentError, 'You must pass prevValue' unless opts.key?(:prevValue)
+      payload = {}
+      [:value, :prevValue, :ttl].each do |k|
+        payload[k] = opts[k] if opts.key?(k)
+      end
       response = api_execute(path, :put, params: payload)
       Response.from_http_response(response)
     end
@@ -85,22 +75,26 @@ module Etcd
     # @options [Hash] additional options for watching a key
     # @options [Fixnum] :index watch the specified key from given index
     # @options [Fixnum] :timeout specify http timeout
-    def watch(key, options = {})
+    def watch(key, opts = {})
       params = { wait: true }
-      timeout = options[:timeout] || @read_timeout
-      index = options[:waitIndex] || options[:index]
+      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      timeout = opts[:timeout] || @read_timeout
+      index = opts[:waitIndex] || opts[:index]
       params[:waitIndex] = index unless index.nil?
-      params[:consistent] = options[:consistent] if options.key?(:consistent)
+      params[:consistent] = opts[:consistent] if opts.key?(:consistent)
 
       response = api_execute(key_endpoint + key, :get,
                              timeout: timeout, params: params)
       Response.from_http_response(response)
     end
 
-    def create_in_order(dir, value, opts = {})
+    def create_in_order(dir, opts = {})
       path  = key_endpoint + dir
-      payload = { 'value' => value }
-      payload['ttl'] = opts[:ttl] if opts[:ttl]
+      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      payload = {}
+      [:ttl, :value].each do |k|
+        payload[k] = opts[k] if opts.key?(k)
+      end
       response = api_execute(path, :post, params: payload)
       Response.from_http_response(response)
     end
@@ -127,10 +121,13 @@ module Etcd
       Response.from_http_response(response)
     end
 
-    def update(key, value, ttl = nil)
+    def update(key, opts = {})
       path  = key_endpoint + key
-      payload = { value: value, prevExist: true }
-      payload['ttl'] = ttl unless ttl.nil?
+      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      payload = { prevExist: true }
+      [:value, :ttl, :dir].each do |k|
+        payload[k] = opts[k] if opts.key?(k)
+      end
       response = api_execute(path, :put, params: payload)
       Response.from_http_response(response)
     end
