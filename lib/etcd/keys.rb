@@ -83,6 +83,10 @@ module Etcd
       Response.from_http_response(response)
     end
 
+    # Creates nested keys, where parent key is directory
+    # This method has following parameters as argument
+    # @dir    - nested key path with directory name(s)
+    # @options [Hash] additional options for creating a key with nested directory structure
     def create_in_order(dir, opts = {})
       path  = key_endpoint + dir
       raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
@@ -94,7 +98,7 @@ module Etcd
       Response.from_http_response(response)
     end
 
-    # This method checks existance of a given key and returns true if key is present
+    # Checks existance of a given key and returns true if key is present
     #
     # This method has following parameters as argument
     # @ key   - key to be checked
@@ -109,7 +113,7 @@ module Etcd
       end
     end
 
-    # This method create/adds a new key
+    # Create/adds a new key
     #
     # This method has following parameters as argument
     # * key       - key to be created
@@ -119,7 +123,7 @@ module Etcd
       set(key, opts.merge({ prevExist: false}))
     end
 
-    # This method updates an existing key
+    # Updates an existing key
     #
     # This method has following parameters as argument
     # * key       - key to be created
@@ -129,6 +133,10 @@ module Etcd
       set(key, opts.merge({ prevExist: true}))
     end
 
+    # Gives a notification whenever specified key changes
+    #
+    # This method has following parameters as argument
+    # @ key   - key to be watched
     def eternal_watch(key, index = nil)
       loop do
         response = watch(key, index)
