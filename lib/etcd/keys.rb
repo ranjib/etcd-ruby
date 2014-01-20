@@ -29,7 +29,7 @@ module Etcd
     # * key   - whose value to be set
     # * value - value to be set for specified key
     # * ttl   - shelf life of a key (in secsonds) (optional)
-    def set(key, opts = nil)
+    def set(key, opts = {})
       raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       path  = key_endpoint + key
       payload = {}
@@ -83,6 +83,10 @@ module Etcd
       Response.from_http_response(response)
     end
 
+    # Creates nested keys, where parent key is directory
+    # This method has following parameters as argument
+    # @dir    - nested key path with directory name(s)
+    # @options [Hash] additional options for creating a key with nested directory structure
     def create_in_order(dir, opts = {})
       path  = key_endpoint + dir
       raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
@@ -94,6 +98,10 @@ module Etcd
       Response.from_http_response(response)
     end
 
+    # Checks existance of a given key and returns true if key is present
+    #
+    # This method has following parameters as argument
+    # @ key   - key to be checked
     def exists?(key)
       begin
         Etcd::Log.debug("Checking if key:' #{key}' exists")
@@ -105,14 +113,30 @@ module Etcd
       end
     end
 
+    # Create/adds a new key
+    #
+    # This method has following parameters as argument
+    # * key       - key to be created
+    # * value     - new value to be set for specified key
+    # * ttl       - shelf life of a key (in secsonds) (optional)
     def create(key, opts = {})
       set(key, opts.merge({ prevExist: false}))
     end
 
+    # Updates an existing key
+    #
+    # This method has following parameters as argument
+    # * key       - key to be created
+    # * value     - new value to be set for existing key
+    # * ttl       - shelf life of a key (in secsonds) (optional)
     def update(key, opts = {})
       set(key, opts.merge({ prevExist: true}))
     end
 
+    # Gives a notification whenever specified key changes
+    #
+    # This method has following parameters as argument
+    # @ key   - key to be watched
     def eternal_watch(key, index = nil)
       loop do
         response = watch(key, index)
