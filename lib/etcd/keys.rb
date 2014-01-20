@@ -29,7 +29,7 @@ module Etcd
     # * key   - whose value to be set
     # * value - value to be set for specified key
     # * ttl   - shelf life of a key (in secsonds) (optional)
-    def set(key, opts = nil)
+    def set(key, opts = {})
       raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       path  = key_endpoint + key
       payload = {}
