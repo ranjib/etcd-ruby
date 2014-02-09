@@ -8,6 +8,7 @@ require 'etcd/keys'
 require 'etcd/exceptions'
 require 'etcd/mod/lock'
 require 'etcd/mod/leader'
+require 'OpenSSL'
 
 module Etcd
   ##
