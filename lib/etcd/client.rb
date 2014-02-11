@@ -1,5 +1,6 @@
 # Encoding: utf-8
 
+require 'openssl'
 require 'net/http'
 require 'json'
 require 'etcd/log'
