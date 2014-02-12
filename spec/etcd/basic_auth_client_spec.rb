@@ -17,7 +17,7 @@ describe "Etcd basic auth client" do
   end
 
   it "should set basic auth" do
-    Net::HTTP.any_instance.stub(:basic_auth).and_call_original
+    Net::HTTPRequest.any_instance.should_receive(:basic_auth).with('test', 'pwd') 
     key = random_key
     value = uuid.generate
     client.set(key, value: value)
