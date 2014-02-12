@@ -29,6 +29,7 @@ module Etcd
 
     attr_reader :host, :port, :http, :allow_redirect
     attr_reader :use_ssl, :verify_mode, :read_timeout
+    attr_reader :user_name, :password
 
     ##
     # Creates an Etcd::Client object. It accepts a hash +opts+ as argument
@@ -44,6 +45,8 @@ module Etcd
       @allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
       @use_ssl = opts[:use_ssl] || false
       @verify_mode = opts.key?(:verify_mode) ? opts[:verify_mode] : OpenSSL::SSL::VERIFY_PEER
+      @user_name = opts[:user_name] || nil
+      @password = opts[:password] || nil
     end
 
     # Returns the etcd api version that will be used for across API methods
@@ -91,6 +94,7 @@ module Etcd
       http.read_timeout = timeout
       http.use_ssl = use_ssl
       http.verify_mode = verify_mode
+      req.basic_auth(user_name, password) if [user_name, password].all?
       Log.debug("Invoking: '#{req.class}' against '#{path}")
       res = http.request(req)
       Log.debug("Response code: #{res.code}")

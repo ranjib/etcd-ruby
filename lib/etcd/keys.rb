@@ -16,8 +16,8 @@ module Etcd
     # Retrives a key with its associated data, if key is not present it will
     # return with message "Key Not Found"
     #
-    # This method has following parameters as argument
-    # * key - whose data to be retrive
+    # This method takes the following parameters as arguments
+    # * key - whose data is to be retrieved
     def get(key, opts = {})
       response = api_execute(key_endpoint + key, :get, params: opts)
       Response.from_http_response(response)
@@ -25,10 +25,10 @@ module Etcd
 
     # Create or update a new key
     #
-    # This method has following parameters as argument
+    # This method takes the following parameters as arguments
     # * key   - whose value to be set
     # * value - value to be set for specified key
-    # * ttl   - shelf life of a key (in secsonds) (optional)
+    # * ttl   - shelf life of a key (in seconds) (optional)
     def set(key, opts = nil)
       raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       path  = key_endpoint + key
@@ -42,7 +42,7 @@ module Etcd
 
     # Deletes a key (and its content)
     #
-    # This method has following parameters as argument
+    # This method takes the following parameters as arguments
     # * key - key to be deleted
     def delete(key, opts = {})
       response = api_execute(key_endpoint + key, :delete, params: opts)
@@ -51,7 +51,7 @@ module Etcd
 
     # Set a new value for key if previous value of key is matched
     #
-    # This method takes following parameters as argument
+    # This method takes the following parameters as arguments
     # * key       - whose value is going to change if previous value is matched
     # * value     - new value to be set for specified key
     # * prevValue - value of a key to compare with existing value of key
@@ -65,7 +65,7 @@ module Etcd
 
     # Gives a notification when specified key changes
     #
-    # This method has following parameters as argument
+    # This method takes the following parameters as arguments
     # @ key   - key to be watched
     # @options [Hash] additional options for watching a key
     # @options [Fixnum] :index watch the specified key from given index
