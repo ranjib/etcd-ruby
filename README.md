@@ -22,6 +22,7 @@ Or install it yourself as:
 client = Etcd.client # this will create a client against etcd server running on localhost on port 4001
 client = Etcd.client(port: 4002)
 client = Etcd.client(host: '127.0.0.1', port: 4003)
+client = Etcd.client(:user_name => 'test', :password => 'pwd') # populates the authentication header for basic HTTP auth with user name and password (useful for proxied connections)
 client = Etcd.client(host: '127.0.0.1', port: 4003, allow_redirect: false) # wont let you run sensitive commands on non-leader machines, default is true
 ```
 ### Set a key
