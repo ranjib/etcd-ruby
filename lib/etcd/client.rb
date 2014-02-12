@@ -93,7 +93,7 @@ module Etcd
       http.read_timeout = timeout
       http.use_ssl = use_ssl
       http.verify_mode = verify_mode
-      req.basic_auth(user_name, password) if ((!user_name.nil?) && (!password.nil?))
+      req.basic_auth(user_name, password) if [user_name, password].all?
       Log.debug("Invoking: '#{req.class}' against '#{path}")
       res = http.request(req)
       Log.debug("Response code: #{res.code}")
