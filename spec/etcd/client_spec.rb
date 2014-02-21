@@ -29,7 +29,14 @@ describe Etcd::Client do
       end.to raise_error
     end
 
-    it 'should redirect api request when allow_redirect is set'
+    it 'should redirect api request when allow_redirect is set' do
+      key = random_key
+      value = uuid.generate
+      rd_client = Etcd.client host: 'localhost', port: 4003
+      resp = rd_client.set(key, value: value)
+      resp.node.key.should eql key
+      resp.node.value.should eql value
+    end
   end
 
   context '#http header based metadata' do
