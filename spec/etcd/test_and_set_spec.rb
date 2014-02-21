@@ -12,7 +12,8 @@ describe 'Etcd test_and_set' do
     key = random_key(2)
     old_value = uuid.generate
     new_value = uuid.generate
-    client.set(key, value: old_value)
+    resp = client.set(key, value: old_value)
+    resp.node.value.should eql old_value
     client.test_and_set(key, value: new_value, prevValue: old_value)
     expect(client.get(key).value).to eq(new_value)
   end

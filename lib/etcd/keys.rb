@@ -59,8 +59,7 @@ module Etcd
     def compare_and_swap(key, opts =  {})
       fail ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       fail ArgumentError, 'You must pass prevValue' unless opts.key?(:prevValue)
-      path = key_endpoint + key
-      set(path, opts)
+      set(key, opts)
     end
 
     # Gives a notification when specified key changes

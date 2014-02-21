@@ -36,6 +36,7 @@ describe Etcd::Client do
       resp = rd_client.set(key, value: value)
       resp.node.key.should eql key
       resp.node.value.should eql value
+      client.get(key).value.should eql resp.value
     end
   end
 
