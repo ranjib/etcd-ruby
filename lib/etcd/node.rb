@@ -2,14 +2,13 @@
 
 module Etcd
   class Node
-
     include Comparable
 
     attr_reader :created_index, :modified_index, :expiration, :ttl, :key, :value
-    alias :createdIndex :created_index
-    alias :modifiedIndex :modified_index
+    alias_method :createdIndex, :created_index
+    alias_method :modifiedIndex, :modified_index
 
-    def initialize(opts={})
+    def initialize(opts = {})
       @created_index = opts['createdIndex']
       @modified_index = opts['modifiedIndex']
       @ttl = opts['ttl']
@@ -33,7 +32,7 @@ module Etcd
       if directory?
         @children ||= []
       else
-        raise "This is not a directory, cant have children"
+        fail 'This is not a directory, cant have children'
       end
     end
 

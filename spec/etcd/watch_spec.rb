@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-describe "Etcd watch" do
+describe 'Etcd watch' do
 
   let(:client) do
     Etcd.client
   end
 
-  it "without index, returns the value at a particular index" do
+  it 'without index, returns the value at a particular index' do
     key = random_key(4)
     value1 = uuid.generate
     value2 = uuid.generate
@@ -20,7 +20,7 @@ describe "Etcd watch" do
     expect(client.watch(key, index: index2).node.value).to eq(value2)
   end
 
-  it "with index, waits and return when the key is updated" do
+  it 'with index, waits and return when the key is updated' do
     response = nil
     key = random_key
     value = uuid.generate

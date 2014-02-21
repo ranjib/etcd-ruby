@@ -53,7 +53,6 @@ describe 'Etcd specs for the main etcd README examples' do
   end
 
   context 'set a key named "/message"' do
-    
 
     before(:all) do
      @response = Etcd.client.set('/message', value: 'PinkFloyd')
@@ -203,7 +202,7 @@ describe 'Etcd specs for the main etcd README examples' do
       directory = client.get('/queue', sorted: true)
       past_index = directory.children.index(responses.first.node)
       9.times do |n|
-        current_index = directory.children.index(responses[n+1].node)
+        current_index = directory.children.index(responses[n + 1].node)
         expect(current_index).to be > past_index
         past_index = current_index
       end
@@ -230,18 +229,18 @@ describe 'Etcd specs for the main etcd README examples' do
 
     it 'will throw error if updated without setting prevExist' do
       expect do
-        client.set('/directory', dir:true, ttl:5)
+        client.set('/directory', dir: true, ttl: 5)
       end.to raise_error
     end
 
     it 'can be updated by setting  prevExist to true' do
-      client.set('/directory', prevExist: true, dir:true, ttl:5)
+      client.set('/directory', prevExist: true, dir: true, ttl: 5)
       expect(client.get('/directory').node.ttl).to eq(5)
     end
 
     it 'watchers should get expriy notification' do
       client.set('/directory/a', value: 'Test')
-      client.set('/directory', prevExist: true, dir:true, ttl:2)
+      client.set('/directory', prevExist: true, dir: true, ttl: 2)
       response = client.watch('/directory/a', consistent: true, timeout: 3)
       expect(response.action).to eq('expire')
     end
@@ -256,7 +255,7 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'atomic compare and swap' do
 
     it 'should  raise error if prevExist is passed a false' do
-      client.set('/foo', value:'one')
+      client.set('/foo', value: 'one')
       expect do
         client.set('/foo', value: 'three',  prevExist: false)
       end.to raise_error
@@ -276,7 +275,7 @@ describe 'Etcd specs for the main etcd README examples' do
   end
   context 'directory manipulation' do
     it 'should allow creating directory' do
-      expect(client.set('/dir', dir:true)).to be_directory
+      expect(client.set('/dir', dir: true)).to be_directory
     end
 
     it 'should allow listing directory' do
@@ -286,7 +285,7 @@ describe 'Etcd specs for the main etcd README examples' do
 
     it 'should allow recursive directory listing' do
       response = client.get('/', recursive: true)
-      expect(response.children.find{|n|n.key=='/foo_dir'}.children).to_not be_empty
+      expect(response.children.find { |n|n.key == '/foo_dir' }.children).to_not be_empty
     end
 
     it 'should be able to delete empty directory without the recusrive flag' do

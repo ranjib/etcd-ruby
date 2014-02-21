@@ -5,16 +5,14 @@ require 'json'
 require 'forwardable'
 
 module Etcd
-
   class Response
-
     extend Forwardable
 
     attr_reader :action, :node, :etcd_index, :raft_index, :raft_term
 
     def_delegators :@node, :key, :value, :directory?, :children
 
-    def initialize(opts, headers={})
+    def initialize(opts, headers = {})
       @action = opts['action']
       @node = Node.new(opts['node'])
       @etcd_index = headers[:etcd_index]
@@ -24,7 +22,7 @@ module Etcd
 
     def self.from_http_response(response)
       data = JSON.parse(response.body)
-      headers = Hash.new
+      headers = {}
       headers[:etcd_index] = response['X-Etcd-Index'].to_i
       headers[:raft_index] = response['X-Raft-Index'].to_i
       headers[:raft_term] = response['X-Raft-Term'].to_i

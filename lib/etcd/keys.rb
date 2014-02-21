@@ -30,7 +30,7 @@ module Etcd
     # * value - value to be set for specified key
     # * ttl   - shelf life of a key (in seconds) (optional)
     def set(key, opts = nil)
-      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      fail ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       path  = key_endpoint + key
       payload = {}
       [:ttl, :value, :dir, :prevExist, :prevValue, :prevIndex].each do |k|
@@ -56,11 +56,11 @@ module Etcd
     # * value     - new value to be set for specified key
     # * prevValue - value of a key to compare with existing value of key
     # * ttl       - shelf life of a key (in secsonds) (optional)
-    def compare_and_swap(key,opts= {})
+    def compare_and_swap(key, opts =  {})
       path  = key_endpoint + key
-      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
-      raise ArgumentError, 'You must pass prevValue' unless opts.key?(:prevValue)
-      set(key,opts)
+      fail ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      fail ArgumentError, 'You must pass prevValue' unless opts.key?(:prevValue)
+      set(key, opts)
     end
 
     # Gives a notification when specified key changes
@@ -72,7 +72,7 @@ module Etcd
     # @options [Fixnum] :timeout specify http timeout
     def watch(key, opts = {})
       params = { wait: true }
-      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      fail ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       timeout = opts[:timeout] || @read_timeout
       index = opts[:waitIndex] || opts[:index]
       params[:waitIndex] = index unless index.nil?
@@ -85,7 +85,7 @@ module Etcd
 
     def create_in_order(dir, opts = {})
       path  = key_endpoint + dir
-      raise ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
+      fail ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       payload = {}
       [:ttl, :value].each do |k|
         payload[k] = opts[k] if opts.key?(k)
@@ -106,11 +106,11 @@ module Etcd
     end
 
     def create(key, opts = {})
-      set(key, opts.merge({ prevExist: false}))
+      set(key, opts.merge( prevExist: fals e))
     end
 
     def update(key, opts = {})
-      set(key, opts.merge({ prevExist: true}))
+      set(key, opts.merge( prevExist: tru e))
     end
 
     def eternal_watch(key, index = nil)

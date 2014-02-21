@@ -17,10 +17,9 @@ module Etcd
   # etcd api, like Etcd::Client#lock and Etcd::Client#eternal_watch, they
   # are defined in separate modules and included in this class
   class Client
-
-    HTTP_REDIRECT = ->(r){ r.is_a? Net::HTTPRedirection }
-    HTTP_SUCCESS = ->(r){ r.is_a? Net::HTTPSuccess }
-    HTTP_CLIENT_ERROR = ->(r){ r.is_a? Net::HTTPClientError }
+    HTTP_REDIRECT = ->(r) { r.is_a? Net::HTTPRedirection }
+    HTTP_SUCCESS = ->(r) { r.is_a? Net::HTTPSuccess }
+    HTTP_CLIENT_ERROR = ->(r) { r.is_a? Net::HTTPClientError }
 
     include Stats
     include Keys

@@ -10,7 +10,7 @@ describe 'lock' do
 
   it 'should be able to acquire a lock' do
     expect do
-      client.acquire_lock('/my_lock',10)
+      client.acquire_lock('/my_lock', 10)
     end.to_not raise_error
   end
 
@@ -23,7 +23,7 @@ describe 'lock' do
 
   it 'should be able to renew a lock based on index' do
     client.acquire_lock('/my_lock2', 10)
-    index = client.get_lock('/my_lock2', field:'index')
+    index = client.get_lock('/my_lock2', field: 'index')
     expect do
       client.renew_lock('/my_lock2', 10, index: index)
     end.to_not raise_error
@@ -38,7 +38,7 @@ describe 'lock' do
 
   it 'should be able to delete a lock based on index' do
     client.acquire_lock('/my_lock4', 10)
-    index = client.get_lock('/my_lock4', field:'index')
+    index = client.get_lock('/my_lock4', field: 'index')
     expect do
       client.delete_lock('/my_lock4', index: index)
     end.to_not raise_error
