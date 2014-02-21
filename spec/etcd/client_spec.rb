@@ -15,7 +15,7 @@ describe Etcd::Client do
   end
 
   it '#version' do
-    expect(client.version).to match(/^etcd v0\.\d+\./)
+    expect(client.version).to match(/^etcd v?0\.\d+\.\d+(\+git)?/)
   end
 
   it '#version_prefix' do
