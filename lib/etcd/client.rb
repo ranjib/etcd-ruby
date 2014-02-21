@@ -37,6 +37,7 @@ module Etcd
     # @opts [String] :host IP address of the etcd server (default 127.0.0.1)
     # @opts [Fixnum] :port Port number of the etcd server (default 4001)
     # @opts [Fixnum] :read_timeout set HTTP read timeouts (default 60)
+    # rubocop:disable CyclomaticComplexity
     def initialize(opts = {})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
@@ -47,6 +48,7 @@ module Etcd
       @user_name = opts[:user_name] || nil
       @password = opts[:password] || nil
     end
+    # rubocop:enable CyclomaticComplexity
 
     # Returns the etcd api version that will be used for across API methods
     def version_prefix
@@ -74,6 +76,7 @@ module Etcd
     # * path    - etcd server path (etcd server end point)
     # * method  - the request method used
     # * options  - any additional parameters used by request method (optional)
+    # rubocop:disable MethodLength, CyclomaticComplexity
     def api_execute(path, method, options = {})
       params = options[:params]
       case  method
@@ -121,6 +124,7 @@ module Etcd
         res.error!
       end
     end
+    # rubocop:enable MethodLength
 
     def build_http_request(klass, path, params = nil, body = nil)
       path += '?' + URI.encode_www_form(params) unless params.nil?

@@ -4,6 +4,7 @@ require 'timeout'
 
 module Etcd
   module Mod
+    # implement etcd lock module
     module Lock
       def mod_lock_endpoint
         '/mod/v2/lock'
@@ -18,7 +19,7 @@ module Etcd
       end
 
       def renew_lock(key, ttl, opts = {})
-        unless opts.key?(:index) or opts.key?(:value)
+        unless opts.key?(:index) || opts.key?(:value)
           fail ArgumentError, 'You mast pass index or value'
         end
         path = mod_lock_endpoint + key + "?ttl=#{ttl}"
@@ -33,12 +34,13 @@ module Etcd
       end
 
       def delete_lock(key, opts = {})
-        unless opts.key?(:index) or opts.key?(:value)
+        unless opts.key?(:index) || opts.key?(:value)
           fail ArgumentError, 'You must pass index or value'
         end
         api_execute(mod_lock_endpoint + key, :delete, params: opts)
       end
 
+      # rubocop:disable RescueException
       def lock(key, ttl, opts = {})
         acquire_lock('/' + key, ttl, opts)
         index = get_lock('/' + key, field: index)
@@ -50,6 +52,7 @@ module Etcd
           delete_lock(key, index: index)
         end
       end
+      # rubocop:enable RescueException
 
       alias_method :retrive_lock, :get_lock
       alias_method :release_lock, :delete_lock

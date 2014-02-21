@@ -5,6 +5,7 @@ require 'json'
 require 'forwardable'
 
 module Etcd
+  # manage http responses
   class Response
     extend Forwardable
 
@@ -26,7 +27,7 @@ module Etcd
       headers[:etcd_index] = response['X-Etcd-Index'].to_i
       headers[:raft_index] = response['X-Raft-Index'].to_i
       headers[:raft_term] = response['X-Raft-Term'].to_i
-      response = Response.new(data, headers)
+      Response.new(data, headers)
     end
   end
 end

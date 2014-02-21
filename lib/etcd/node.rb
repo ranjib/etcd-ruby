@@ -1,6 +1,7 @@
 # Encoding: utf-8
 
 module Etcd
+  # This class represents an etcd node
   class Node
     include Comparable
 
@@ -8,6 +9,7 @@ module Etcd
     alias_method :createdIndex, :created_index
     alias_method :modifiedIndex, :modified_index
 
+    # rubocop:disable MethodLength
     def initialize(opts = {})
       @created_index = opts['createdIndex']
       @modified_index = opts['modifiedIndex']
@@ -17,7 +19,7 @@ module Etcd
       @expiration = opts['expiration']
       @dir = opts['dir']
 
-      if opts['dir'] and (!!opts['nodes'])
+      if opts['dir'] && (!!opts['nodes'])
         opts['nodes'].each do |data|
           children << Node.new(data)
         end

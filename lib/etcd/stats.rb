@@ -3,6 +3,7 @@
 require 'json'
 
 module Etcd
+  # Support stats
   module Stats
     def stats_endpoint
       version_prefix + '/stats'

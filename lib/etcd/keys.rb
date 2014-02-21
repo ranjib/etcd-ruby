@@ -57,10 +57,10 @@ module Etcd
     # * prevValue - value of a key to compare with existing value of key
     # * ttl       - shelf life of a key (in secsonds) (optional)
     def compare_and_swap(key, opts =  {})
-      path  = key_endpoint + key
       fail ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       fail ArgumentError, 'You must pass prevValue' unless opts.key?(:prevValue)
-      set(key, opts)
+      path = key_endpoint + key
+      set(path, opts)
     end
 
     # Gives a notification when specified key changes
@@ -95,22 +95,20 @@ module Etcd
     end
 
     def exists?(key)
-      begin
-        Etcd::Log.debug("Checking if key:' #{key}' exists")
-        get(key)
-        true
-      rescue KeyNotFound => e
-        Etcd::Log.debug("Key does not exist #{e}")
-        false
-      end
+      Etcd::Log.debug("Checking if key:' #{key}' exists")
+      get(key)
+      true
+    rescue KeyNotFound => e
+      Etcd::Log.debug("Key does not exist #{e}")
+      false
     end
 
     def create(key, opts = {})
-      set(key, opts.merge( prevExist: fals e))
+      set(key, opts.merge(prevExist: false))
     end
 
     def update(key, opts = {})
-      set(key, opts.merge( prevExist: tru e))
+      set(key, opts.merge(prevExist: true))
     end
 
     def eternal_watch(key, index = nil)
