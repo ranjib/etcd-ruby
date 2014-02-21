@@ -6,12 +6,12 @@ describe Etcd::Node do
     Etcd.client
   end
 
-  it "should create a directory with parent key when nested keys are set" do
+  it 'should create a directory with parent key when nested keys are set' do
     parent = random_key
     child = random_key
     value = uuid.generate
-    client.set(parent+child, value: value)
-    expect(client.get(parent+child)).to_not be_directory
+    client.set(parent + child, value: value)
+    expect(client.get(parent + child)).to_not be_directory
     expect(client.get(parent)).to be_directory
   end
 

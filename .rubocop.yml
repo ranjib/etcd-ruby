@@ -1,0 +1,12 @@
+AllCops:
+  Includes:
+    - Gemfile
+    - lib/**
+  Excludes:
+    - spec/**
+
+Encoding:
+  Enabled: false
+
+LineLength:
+  Max: 100

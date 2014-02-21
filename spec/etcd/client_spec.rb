@@ -15,7 +15,7 @@ describe Etcd::Client do
   end
 
   it '#version' do
-    expect(client.version).to match(/^etcd v0\.\d+\./)
+    expect(client.version).to match(/^etcd v?0\.\d+\.\d+(\+git)?/)
   end
 
   it '#version_prefix' do
@@ -29,7 +29,15 @@ describe Etcd::Client do
       end.to raise_error
     end
 
-    it 'should redirect api request when allow_redirect is set'
+    it 'should redirect api request when allow_redirect is set' do
+      key = random_key
+      value = uuid.generate
+      rd_client = Etcd.client host: 'localhost', port: 4003
+      resp = rd_client.set(key, value: value)
+      resp.node.key.should eql key
+      resp.node.value.should eql value
+      client.get(key).value.should eql resp.value
+    end
   end
 
   context '#http header based metadata' do

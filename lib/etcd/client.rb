@@ -17,10 +17,9 @@ module Etcd
   # etcd api, like Etcd::Client#lock and Etcd::Client#eternal_watch, they
   # are defined in separate modules and included in this class
   class Client
-
-    HTTP_REDIRECT = ->(r){ r.is_a? Net::HTTPRedirection }
-    HTTP_SUCCESS = ->(r){ r.is_a? Net::HTTPSuccess }
-    HTTP_CLIENT_ERROR = ->(r){ r.is_a? Net::HTTPClientError }
+    HTTP_REDIRECT = ->(r) { r.is_a? Net::HTTPRedirection }
+    HTTP_SUCCESS = ->(r) { r.is_a? Net::HTTPSuccess }
+    HTTP_CLIENT_ERROR = ->(r) { r.is_a? Net::HTTPClientError }
 
     include Stats
     include Keys
@@ -38,6 +37,7 @@ module Etcd
     # @opts [String] :host IP address of the etcd server (default 127.0.0.1)
     # @opts [Fixnum] :port Port number of the etcd server (default 4001)
     # @opts [Fixnum] :read_timeout set HTTP read timeouts (default 60)
+    # rubocop:disable CyclomaticComplexity
     def initialize(opts = {})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
@@ -48,6 +48,7 @@ module Etcd
       @user_name = opts[:user_name] || nil
       @password = opts[:password] || nil
     end
+    # rubocop:enable CyclomaticComplexity
 
     # Returns the etcd api version that will be used for across API methods
     def version_prefix
@@ -75,6 +76,7 @@ module Etcd
     # * path    - etcd server path (etcd server end point)
     # * method  - the request method used
     # * options  - any additional parameters used by request method (optional)
+    # rubocop:disable MethodLength, CyclomaticComplexity
     def api_execute(path, method, options = {})
       params = options[:params]
       case  method
@@ -98,18 +100,22 @@ module Etcd
       Log.debug("Invoking: '#{req.class}' against '#{path}")
       res = http.request(req)
       Log.debug("Response code: #{res.code}")
-      process_http_request(res)
+      process_http_request(res, req, params)
     end
 
-    def process_http_request(res)
+    # need to ahve original request to process the response when it redirects
+    def process_http_request(res, req = nil, params = nil)
       case res
       when HTTP_SUCCESS
         Log.debug('Http success')
         res
       when HTTP_REDIRECT
         if allow_redirect
-          Log.debug('Http redirect, following')
-          api_execute(res['location'], method, params: params)
+          uri = URI(res['location'])
+          @host = uri.host
+          @port = uri.port
+          Log.debug("Http redirect, setting new host to: #{@host}:#{@port}, and retrying")
+          api_execute(uri.path, req.method.downcase.to_sym, params: params)
         else
           Log.debug('Http redirect not allowed')
           res.error!
@@ -122,6 +128,7 @@ module Etcd
         res.error!
       end
     end
+    # rubocop:enable MethodLength
 
     def build_http_request(klass, path, params = nil, body = nil)
       path += '?' + URI.encode_www_form(params) unless params.nil?

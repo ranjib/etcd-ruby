@@ -4,15 +4,15 @@ require 'timeout'
 
 module Etcd
   module Mod
+    # Implemetn Etcd's Leader module
     module Leader
-
       def mod_leader_endpoint
         '/mod/v2/leader'
       end
 
       def set_leader(key, value, ttl)
         path = mod_leader_endpoint + "#{key}?ttl=#{ttl}"
-        api_execute(path, :put, params:{name: value}).body
+        api_execute(path, :put, params: { name: value }).body
       end
 
       def get_leader(key)
