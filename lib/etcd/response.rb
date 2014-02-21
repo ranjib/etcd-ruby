@@ -2,6 +2,7 @@
 
 require 'etcd/node'
 require 'json'
+require 'forwardable'
 
 module Etcd
 
