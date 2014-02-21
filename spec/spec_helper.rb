@@ -7,6 +7,8 @@ require 'coco'
 require 'uuid'
 require 'etcd'
 
+Etcd::Log.level = :debug
+
 module Etcd
   module SpecHelper
     @@pids =  []
