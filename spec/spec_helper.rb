@@ -7,15 +7,13 @@ require 'coco'
 require 'uuid'
 require 'etcd'
 
-Etcd::Log.level = :debug
-
 module Etcd
   module SpecHelper
     @@pids =  []
 
     def self.etcd_binary
-      if File.exists? './etcd/etcd'
-        './etcd/etcd'
+      if File.exists? './etcd/bin/etcd'
+        './etcd/bin/etcd'
       elsif !!ENV['ETCD_BIN']
         ENV['ETCD_BIN']
       else
