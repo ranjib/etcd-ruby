@@ -14,7 +14,7 @@ module Etcd
         path = mod_lock_endpoint + key + "?ttl=#{ttl}"
         timeout = opts[:timeout] || 60
         Timeout.timeout(timeout) do
-          api_execute(path, :post, params: opts)
+          return api_execute(path, :post, params: opts).body
         end
       end
 
@@ -42,14 +42,14 @@ module Etcd
 
       # rubocop:disable RescueException
       def lock(key, ttl, opts = {})
-        acquire_lock('/' + key, ttl, opts)
-        index = get_lock('/' + key, field: index)
+        key = "/" + key unless key.start_with? '/'
+        lock_index = acquire_lock(key, ttl, opts)
         begin
           yield key
         rescue Exception => e
           raise e
         ensure
-          delete_lock(key, index: index)
+          delete_lock(key, index: lock_index)
         end
       end
       # rubocop:enable RescueException
