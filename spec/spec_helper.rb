@@ -42,7 +42,13 @@ module Etcd
     end
 
     def self.spawn_etcd_server(dir, client_port = 4001, server_port = 7001, leader = nil)
+
+      cert_file = File.expand_path('../data/ca/certs/server.crt', __FILE__)
+      key_file = File.expand_path('../data/ca/private/server.key', __FILE__)
+      ca_cert = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
+
       args = " -addr 127.0.0.1:#{client_port} -peer-addr 127.0.0.1:#{server_port} -data-dir #{dir} -name node_#{client_port}"
+      args<< " -cert-file=#{cert_file} -key-file=#{key_file}" # -ca-file=#{ca_cert}"
       command = if leader.nil?
                   etcd_binary + args
                 else
@@ -71,11 +77,18 @@ module Etcd
     end
 
     def other_client
-      Etcd.client
+      Etcd.client(host: 'localhost') do |config|
+        config.use_ssl = true
+        config.ca_file = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
+      end
     end
 
     def read_only_client
-      Etcd.client(allow_redirect: false, port: 4004)
+      Etcd.client(allow_redirect: false, port: 4004, host: 'localhost') do |config|
+        config.use_ssl = true
+        config.ca_file = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
+        config.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
     end
   end
 end
