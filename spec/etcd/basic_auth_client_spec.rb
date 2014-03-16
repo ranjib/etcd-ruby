@@ -5,7 +5,10 @@ require 'spec_helper'
 describe 'Etcd basic auth client' do
 
   let(:client) do
-    Etcd.client(user_name: 'test', password: 'pwd')
+    Etcd.client do |config|
+      config.user_name = 'test'
+      config.password = 'pwd'
+    end
   end
 
   it '#user_name' do

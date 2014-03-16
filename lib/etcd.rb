@@ -11,6 +11,8 @@ module Etcd
   # directly
   # If +opts+ is not passed default options are used, defined by Etcd::Client.new
   def self.client(opts = {})
-    Etcd::Client.new(opts)
+    Etcd::Client.new(opts) do |config|
+      yield config if block_given?
+    end
   end
 end
