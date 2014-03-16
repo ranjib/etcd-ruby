@@ -5,7 +5,7 @@ require 'spec_helper'
 describe 'mod leader' do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   it 'should allow setting a key value with ttl' do

@@ -5,7 +5,7 @@ require 'spec_helper'
 describe 'Etcd specs for the main etcd README examples' do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   shared_examples 'response with valid node data' do |action|
@@ -55,7 +55,7 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'set a key named "/message"' do
 
     before(:all) do
-     @response = Etcd.client.set('/message', value: 'PinkFloyd')
+      other_client.set('/message', value: 'PinkFloyd')
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -69,8 +69,8 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'get a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', value: 'PinkFloyd')
-      @response = Etcd.client.get('/message')
+      other_client.set('/message', value: 'PinkFloyd')
+      @response = other_client.get('/message')
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -84,8 +84,8 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'change the value of a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', value: 'World')
-      @response = Etcd.client.set('/message', value: 'PinkFloyd')
+      other_client.set('/message', value: 'World')
+      @response = other_client.set('/message', value: 'PinkFloyd')
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -99,9 +99,9 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'delete a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', value: 'World')
-      Etcd.client.set('/message', value: 'PinkFloyd')
-      @response = Etcd.client.delete('/message')
+      other_client.set('/message', value: 'World')
+      other_client.set('/message', value: 'PinkFloyd')
+      @response = other_client.delete('/message')
     end
 
     it 'should set the return action to SET' do
@@ -115,9 +115,9 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'using ttl a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', value: 'World')
+      other_client.set('/message', value: 'World')
       @set_time = Time.now
-      @response = Etcd.client.set('/message', value: 'PinkFloyd', ttl: 5)
+      @response = other_client.set('/message', value: 'PinkFloyd', ttl: 5)
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -138,7 +138,7 @@ describe 'Etcd specs for the main etcd README examples' do
     it 'should throw exception after the expiration time' do
       sleep 8
       expect do
-        Etcd.client.get('/message')
+        other_client.get('/message')
       end.to raise_error
     end
 
@@ -147,11 +147,11 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'waiting for a change against a key named "/message"' do
 
     before(:all) do
-      Etcd.client.set('/message', value: 'foo')
+      other_client.set('/message', value: 'foo')
       thr = Thread.new do
-        @response = Etcd.client.watch('/message')
+        @response = other_client.watch('/message')
       end
-      Etcd.client.set('/message', value: 'PinkFloyd')
+      other_client.set('/message', value: 'PinkFloyd')
       thr.join
     end
 
@@ -172,7 +172,7 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'atomic in-order keys' do
 
     before(:all) do
-      @response = Etcd.client.create_in_order('/queue', value: 'PinkFloyd')
+      @response = other_client.create_in_order('/queue', value: 'PinkFloyd')
     end
 
     it_should_behave_like 'response with valid http headers'
@@ -212,7 +212,7 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'directory with ttl' do
 
     before(:all) do
-      @response = Etcd.client.set('/directory', dir: true, ttl: 4)
+      @response = other_client.set('/directory', dir: true, ttl: 4)
     end
 
     it 'should create a directory' do
@@ -300,8 +300,8 @@ describe 'Etcd specs for the main etcd README examples' do
   context 'hidden nodes' do
 
     before(:all) do
-      Etcd.client.set('/_message', value: 'Hello Hidden World')
-      Etcd.client.set('/message', value: 'Hello World')
+      other_client.set('/_message', value: 'Hello Hidden World')
+      other_client.set('/message', value: 'Hello World')
     end
 
     it 'should not be visible in directory listing' do

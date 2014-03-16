@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Etcd::Node do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   it 'should create a directory with parent key when nested keys are set' do

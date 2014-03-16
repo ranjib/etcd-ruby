@@ -5,7 +5,7 @@ require 'spec_helper'
 describe 'Etcd test_and_set' do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   it 'should pass when prev value is correct' do

@@ -5,9 +5,11 @@ require 'spec_helper'
 describe 'Etcd basic auth client' do
 
   let(:client) do
-    Etcd.client do |config|
+    Etcd.client(host: 'localhost') do |config|
       config.user_name = 'test'
       config.password = 'pwd'
+      config.use_ssl = true
+      config.ca_file = File.expand_path('../../data/ca/certs/ca.crt', __FILE__)
     end
   end
 

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Etcd::Keys do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   it '#set/#get' do

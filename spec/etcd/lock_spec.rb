@@ -5,7 +5,7 @@ require 'spec_helper'
 describe 'lock' do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   it 'should be able to acquire a lock' do

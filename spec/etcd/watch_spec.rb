@@ -5,7 +5,7 @@ require 'spec_helper'
 describe 'Etcd watch' do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   it 'without index, returns the value at a particular index' do

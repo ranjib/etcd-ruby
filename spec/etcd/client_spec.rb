@@ -3,7 +3,16 @@ require 'spec_helper'
 describe Etcd::Client do
 
   let(:client) do
-    Etcd.client
+
+    cert_file = File.expand_path('../../data/ca/certs/server.crt', __FILE__)
+    key_file = File.expand_path('../../data/ca/private/server.key', __FILE__)
+    ca_file = File.expand_path('../../data/ca/certs/ca.crt', __FILE__)
+    chain = File.expand_path('../../data/ca/chain.crt', __FILE__)
+
+    Etcd.client(host: 'localhost') do |config|
+      config.use_ssl = true
+      config.ca_file = ca_file
+    end
   end
 
   it 'should return the leader address' do
@@ -11,7 +20,7 @@ describe Etcd::Client do
   end
 
   it '#machines' do
-    expect(client.machines).to include('http://127.0.0.1:4001')
+    expect(client.machines).to include('https://127.0.0.1:4001')
   end
 
   it '#version' do
@@ -32,7 +41,11 @@ describe Etcd::Client do
     it 'should redirect api request when allow_redirect is set' do
       key = random_key
       value = uuid.generate
-      rd_client = Etcd.client host: 'localhost', port: 4003
+      rd_client = Etcd.client(host: 'localhost', port: 4003) do |config|
+          config.use_ssl = true
+          config.ca_file = File.expand_path('../../data/ca/certs/ca.crt', __FILE__)
+          config.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        end
       resp = rd_client.set(key, value: value)
       resp.node.key.should eql key
       resp.node.value.should eql value
@@ -44,7 +57,7 @@ describe Etcd::Client do
     before(:all) do
       key = random_key
       value = uuid.generate
-      @response = Etcd.client.set(key, value: value)
+      @response = other_client.set(key, value: value)
     end
 
     it '#etcd_index' do

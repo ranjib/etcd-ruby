@@ -5,7 +5,7 @@ require 'spec_helper'
 describe Etcd::Stats do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   describe 'of leader' do

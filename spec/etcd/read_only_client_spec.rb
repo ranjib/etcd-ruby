@@ -5,7 +5,7 @@ require 'spec_helper'
 describe 'Etcd read only client' do
 
   let(:client) do
-    Etcd.client
+    other_client
   end
 
   it 'should not allow write' do
