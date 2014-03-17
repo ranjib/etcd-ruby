@@ -2,8 +2,16 @@ require 'spec_helper'
 
 describe Etcd::Client do
 
+  before(:all) do
+    start_daemon(3)
+  end
+
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
-    Etcd.client
+    etcd_client
   end
 
   it 'should return the leader address' do
@@ -32,8 +40,7 @@ describe Etcd::Client do
     it 'should redirect api request when allow_redirect is set' do
       key = random_key
       value = uuid.generate
-      rd_client = Etcd.client host: 'localhost', port: 4003
-      resp = rd_client.set(key, value: value)
+      resp = client.set(key, value: value)
       resp.node.key.should eql key
       resp.node.value.should eql value
       client.get(key).value.should eql resp.value
@@ -44,7 +51,7 @@ describe Etcd::Client do
     before(:all) do
       key = random_key
       value = uuid.generate
-      @response = Etcd.client.set(key, value: value)
+      @response = etcd_client.set(key, value: value)
     end
 
     it '#etcd_index' do

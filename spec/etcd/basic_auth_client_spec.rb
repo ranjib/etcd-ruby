@@ -4,8 +4,18 @@ require 'spec_helper'
 
 describe 'Etcd basic auth client' do
 
+  before(:all) do
+    start_daemon(2)
+  end
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
-    Etcd.client(user_name: 'test', password: 'pwd')
+    Etcd.client(host: 'localhost') do |config|
+      config.user_name = 'test'
+      config.password = 'pwd'
+    end
   end
 
   it '#user_name' do

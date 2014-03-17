@@ -4,8 +4,16 @@ require 'spec_helper'
 
 describe 'lock' do
 
+  before(:all) do
+    start_daemon
+  end
+
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
-    Etcd.client
+    etcd_client
   end
 
   it 'should be able to acquire a lock' do

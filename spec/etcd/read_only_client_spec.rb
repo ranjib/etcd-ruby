@@ -4,8 +4,15 @@ require 'spec_helper'
 
 describe 'Etcd read only client' do
 
+  before(:all) do
+    start_daemon(3)
+  end
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
-    Etcd.client
+    etcd_client
   end
 
   it 'should not allow write' do

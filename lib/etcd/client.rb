@@ -2,6 +2,7 @@
 
 require 'openssl'
 require 'net/http'
+require 'net/https'
 require 'json'
 require 'etcd/log'
 require 'etcd/stats'
@@ -17,6 +18,9 @@ module Etcd
   # etcd api, like Etcd::Client#lock and Etcd::Client#eternal_watch, they
   # are defined in separate modules and included in this class
   class Client
+
+    extend Forwardable
+
     HTTP_REDIRECT = ->(r) { r.is_a? Net::HTTPRedirection }
     HTTP_SUCCESS = ->(r) { r.is_a? Net::HTTPSuccess }
     HTTP_CLIENT_ERROR = ->(r) { r.is_a? Net::HTTPClientError }
@@ -26,9 +30,14 @@ module Etcd
     include Mod::Lock
     include Mod::Leader
 
-    attr_reader :host, :port, :http, :allow_redirect
-    attr_reader :use_ssl, :verify_mode, :read_timeout
-    attr_reader :user_name, :password
+    Config = Struct.new(:use_ssl, :verify_mode, :read_timeout, :ssl_key, :ca_file,
+                        :user_name, :password, :allow_redirect, :ssl_cert)
+
+    def_delegators :@config, :use_ssl, :verify_mode, :read_timeout
+    def_delegators :@config, :user_name, :password, :allow_redirect
+
+
+    attr_reader :host, :port, :http, :config
 
     ##
     # Creates an Etcd::Client object. It accepts a hash +opts+ as argument
@@ -41,12 +50,15 @@ module Etcd
     def initialize(opts = {})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
-      @read_timeout = opts[:read_timeout] || 60
-      @allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
-      @use_ssl = opts[:use_ssl] || false
-      @verify_mode = opts.key?(:verify_mode) ? opts[:verify_mode] : OpenSSL::SSL::VERIFY_PEER
-      @user_name = opts[:user_name] || nil
-      @password = opts[:password] || nil
+      @config = Config.new
+      @config.read_timeout = opts[:read_timeout] || 60
+      @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
+      @config.use_ssl = opts[:use_ssl] || false
+      @config.verify_mode = opts.key?(:verify_mode) ? opts[:verify_mode] : OpenSSL::SSL::VERIFY_PEER
+      @config.user_name = opts[:user_name] || nil
+      @config.password = opts[:password] || nil
+      @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
+      yield @config if block_given?
     end
     # rubocop:enable CyclomaticComplexity
 
@@ -94,13 +106,29 @@ module Etcd
       timeout = options[:timeout] || @read_timeout
       http = Net::HTTP.new(host, port)
       http.read_timeout = timeout
-      http.use_ssl = use_ssl
-      http.verify_mode = verify_mode
+      setup_https(http)
       req.basic_auth(user_name, password) if [user_name, password].all?
       Log.debug("Invoking: '#{req.class}' against '#{path}")
       res = http.request(req)
       Log.debug("Response code: #{res.code}")
       process_http_request(res, req, params)
+    end
+
+    def setup_https(http)
+      http.use_ssl = use_ssl
+      http.verify_mode = verify_mode
+      unless config.ssl_cert.nil?
+        Log.debug('Setting up ssl cert')
+        http.cert = config.ssl_cert
+      end
+      unless config.ssl_key.nil?
+        Log.debug('Setting up ssl key')
+        http.key = config.ssl_key
+      end
+      unless config.ca_file.nil?
+        Log.debug('Setting up ssl ca file to :' + config.ca_file)
+        http.ca_file = config.ca_file
+      end
     end
 
     # need to ahve original request to process the response when it redirects
