@@ -98,6 +98,24 @@ module Etcd
       end
     end
 
+    def etcd_ssl_client
+      Etcd.client(host: 'localhost') do |config|
+        config.use_ssl = true
+        config.ca_file = File.expand_path('../data/ca.crt', __FILE__)
+      end
+    end
+
+    def etcd_ssl_client_with_cert
+      client_cert = File.expand_path('../data/client.crt', __FILE__)
+      client_key = File.expand_path('../data/client.key', __FILE__)
+      Etcd.client(host: 'localhost') do |config|
+        config.use_ssl = true
+        config.ca_file = File.expand_path('../data/ca.crt', __FILE__)
+        config.ssl_cert = OpenSSL::X509::Certificate.new(File.read(client_cert))
+        config.ssl_key = OpenSSL::PKey::RSA.new(File.read(client_key))
+      end
+    end
+
     def etcd_client
       Etcd.client
     end

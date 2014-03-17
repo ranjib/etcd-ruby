@@ -78,7 +78,7 @@ describe 'Etcd specs for the main etcd README examples' do
 
     before(:all) do
       etcd_client.set('/message', value: 'PinkFloyd')
-      @response = client.get('/message')
+      @response = etcd_client.get('/message')
     end
 
     it_should_behave_like 'response with valid http headers'
