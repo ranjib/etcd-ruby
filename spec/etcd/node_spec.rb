@@ -2,8 +2,16 @@ require 'spec_helper'
 
 describe Etcd::Node do
 
+  before(:all) do
+    start_daemon
+  end
+
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
-    other_client
+    etcd_client
   end
 
   it 'should create a directory with parent key when nested keys are set' do

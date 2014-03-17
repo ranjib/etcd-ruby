@@ -6,12 +6,51 @@ $LOAD_PATH.unshift(File.expand_path('../spec', __FILE__))
 require 'coco'
 require 'uuid'
 require 'etcd'
+require 'singleton'
 
 module Etcd
-  module SpecHelper
-    @@pids =  []
+  class Spawner
 
-    def self.etcd_binary
+    include Singleton
+
+    def initialize
+      @pids = []
+      @cert_file = File.expand_path('../data/ca/certs/server.crt', __FILE__)
+      @key_file = File.expand_path('../data/ca/private/server.key', __FILE__)
+      @ca_cert = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
+    end
+
+    def etcd_servers
+      @pids.size.times.inject([]){|servers, n| servers << "http://127.0.0.1:700#{n}" }
+    end
+
+    def start(numbers = 1, opts={})
+      raise "Already running etcd servers(#{@pids.inspect})" unless @pids.empty?
+      @tmpdir = Dir.mktmpdir
+      ssl_args = ""
+      ssl_args << " -cert-file=#{@cert_file} -key-file=#{@key_file}" if opts[:use_ssl]
+      ssl_args << " -ca-file=#{@ca_cert}" if opts[:check_client_cert]
+      @pids << daemonize(@tmpdir, ssl_args)
+      (numbers - 1).times do |n|
+        @pids << daemonize(@tmpdir, ssl_args)
+      end
+    end
+
+    def daemonize(dir, ssl_args)
+      client_port = 4001 + @pids.size
+      server_port = 7001 + @pids.size
+      leader = '127.0.0.1:7001'
+      args = " -addr 127.0.0.1:#{client_port} -peer-addr 127.0.0.1:#{server_port}"
+      args << " -data-dir #{dir + client_port.to_s} -name node_#{client_port}"
+      command = etcd_binary + args + ssl_args
+      command << " -peers #{leader}"  unless @pids.empty? # if pids are not empty, theres a daemon already
+      pid = spawn(command, out: '/dev/null')
+      sleep 1
+      Process.detach(pid)
+      pid
+    end
+
+    def etcd_binary
       if File.exists? './etcd/bin/etcd'
         './etcd/bin/etcd'
       elsif !!ENV['ETCD_BIN']
@@ -21,43 +60,23 @@ module Etcd
       end
     end
 
-    def self.start_etcd_servers
-      @@tmpdir = Dir.mktmpdir
-      pid = spawn_etcd_server(@@tmpdir + '/leader')
-      @@pids =  Array(pid)
-      leader = '127.0.0.1:7001'
-      4.times do |n|
-        client_port = 4002 + n
-        server_port = 7002 + n
-        pid = spawn_etcd_server(@@tmpdir + client_port.to_s, client_port, server_port, leader)
-        @@pids << pid
-      end
-    end
-
-    def self.stop_etcd_servers
-      @@pids.each do |pid|
+    def stop
+      @pids.each do |pid|
         Process.kill('TERM', pid)
       end
-      FileUtils.remove_entry_secure(@@tmpdir, true)
+      FileUtils.remove_entry_secure(@tmpdir, true)
+      @pids.clear
+    end
+  end
+
+  module SpecHelper
+
+    def start_daemon(numbers = 1, opts={})
+      Spawner.instance.start(numbers, opts)
     end
 
-    def self.spawn_etcd_server(dir, client_port = 4001, server_port = 7001, leader = nil)
-
-      cert_file = File.expand_path('../data/ca/certs/server.crt', __FILE__)
-      key_file = File.expand_path('../data/ca/private/server.key', __FILE__)
-      ca_cert = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
-
-      args = " -addr 127.0.0.1:#{client_port} -peer-addr 127.0.0.1:#{server_port} -data-dir #{dir} -name node_#{client_port}"
-      args<< " -cert-file=#{cert_file} -key-file=#{key_file}" # -ca-file=#{ca_cert}"
-      command = if leader.nil?
-                  etcd_binary + args
-                else
-                  etcd_binary + args + " -peers #{leader}"
-                end
-      pid = spawn(command, out: '/dev/null')
-      Process.detach(pid)
-      sleep 1
-      pid
+    def stop_daemon
+      Spawner.instance.stop
     end
 
     def uuid
@@ -72,34 +91,23 @@ module Etcd
       key
     end
 
-    def etcd_servers
-      (1..5).map { |n| "http://127.0.0.1:700#{n}" }
-    end
-
-    def other_client
+    def etcd_ssl_client
       Etcd.client(host: 'localhost') do |config|
         config.use_ssl = true
         config.ca_file = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
       end
     end
 
+    def etcd_client
+      Etcd.client
+    end
+
     def read_only_client
-      Etcd.client(allow_redirect: false, port: 4004, host: 'localhost') do |config|
-        config.use_ssl = true
-        config.ca_file = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
-        config.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      end
+      Etcd.client(allow_redirect: false, port: 4002, host: 'localhost')
     end
   end
 end
 
 RSpec.configure do |c|
-
   c.include Etcd::SpecHelper
-  c.before(:suite) do
-    Etcd::SpecHelper.start_etcd_servers
-  end
-  c.after(:suite) do
-    Etcd::SpecHelper.stop_etcd_servers
-  end
 end

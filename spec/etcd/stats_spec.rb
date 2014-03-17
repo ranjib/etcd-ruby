@@ -4,8 +4,16 @@ require 'spec_helper'
 
 describe Etcd::Stats do
 
+  before(:all) do
+    start_daemon(5)
+  end
+
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
-    other_client
+    etcd_client
   end
 
   describe 'of leader' do

@@ -4,12 +4,17 @@ require 'spec_helper'
 
 describe 'Etcd basic auth client' do
 
+  before(:all) do
+    start_daemon(2)
+  end
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
     Etcd.client(host: 'localhost') do |config|
       config.user_name = 'test'
       config.password = 'pwd'
-      config.use_ssl = true
-      config.ca_file = File.expand_path('../../data/ca/certs/ca.crt', __FILE__)
     end
   end
 

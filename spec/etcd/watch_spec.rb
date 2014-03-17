@@ -4,8 +4,16 @@ require 'spec_helper'
 
 describe 'Etcd watch' do
 
+  before(:all) do
+    start_daemon
+  end
+
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
-    other_client
+    etcd_client
   end
 
   it 'without index, returns the value at a particular index' do
@@ -27,6 +35,7 @@ describe 'Etcd watch' do
     thr = Thread.new do
       response = client.watch(key)
     end
+    sleep 2
     client.set(key, value: value)
     thr.join
     expect(response.node.value).to eq(value)

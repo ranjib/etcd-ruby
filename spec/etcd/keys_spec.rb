@@ -2,8 +2,16 @@ require 'spec_helper'
 
 describe Etcd::Keys do
 
+  before(:all) do
+    start_daemon
+  end
+
+  after(:all) do
+    stop_daemon
+  end
+
   let(:client) do
-    other_client
+    etcd_client
   end
 
   it '#set/#get' do
