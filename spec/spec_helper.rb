@@ -15,9 +15,9 @@ module Etcd
 
     def initialize
       @pids = []
-      @cert_file = File.expand_path('../data/ca/certs/server.crt', __FILE__)
-      @key_file = File.expand_path('../data/ca/private/server.key', __FILE__)
-      @ca_cert = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
+      @cert_file = File.expand_path('../data/server.crt', __FILE__)
+      @key_file = File.expand_path('../data/server.key', __FILE__)
+      @ca_cert = File.expand_path('../data/ca.crt', __FILE__)
     end
 
     def etcd_servers
@@ -94,7 +94,7 @@ module Etcd
     def etcd_ssl_client
       Etcd.client(host: 'localhost') do |config|
         config.use_ssl = true
-        config.ca_file = File.expand_path('../data/ca/certs/ca.crt', __FILE__)
+        config.ca_file = File.expand_path('../data/ca.crt', __FILE__)
       end
     end
 
