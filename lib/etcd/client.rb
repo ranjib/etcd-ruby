@@ -37,7 +37,7 @@ module Etcd
     def_delegators :@config, :user_name, :password, :allow_redirect
 
 
-    attr_reader :host, :port, :http, :config
+    attr_reader :seed_hosts, :http, :config
 
     ##
     # Creates an Etcd::Client object. It accepts a hash +opts+ as argument
@@ -48,8 +48,7 @@ module Etcd
     # @opts [Fixnum] :read_timeout set HTTP read timeouts (default 60)
     # rubocop:disable CyclomaticComplexity
     def initialize(opts = {})
-      @host = opts[:host] || '127.0.0.1'
-      @port = opts[:port] || 4001
+      @seed_hosts = opts[:seed_hosts] || ['http://127.0.0.1:4001']
       @config = Config.new
       @config.read_timeout = opts[:read_timeout] || 60
       @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
@@ -59,6 +58,14 @@ module Etcd
       @config.password = opts[:password] || nil
       @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
       yield @config if block_given?
+      # This is a hack which sets cluster to seed_host and then uses that to
+      # find an online server to get the current server list.
+      @cluster = @seed_hosts
+      begin
+        machines
+      rescue AllNodesDown => e
+        Log.warn "All nodes are currently down!"
+      end
     end
     # rubocop:enable CyclomaticComplexity
 
@@ -74,7 +81,7 @@ module Etcd
 
     # Returns array of all machines in the cluster
     def machines
-      api_execute(version_prefix + '/machines', :get).body.split(',').map(&:strip)
+      @cluster = api_execute(version_prefix + '/machines', :get).body.split(',').map(&:strip)
     end
 
     # Get the current leader
@@ -104,14 +111,22 @@ module Etcd
         fail "Unknown http action: #{method}"
       end
       timeout = options[:timeout] || @read_timeout
-      http = Net::HTTP.new(host, port)
-      http.read_timeout = timeout
-      setup_https(http)
-      req.basic_auth(user_name, password) if [user_name, password].all?
-      Log.debug("Invoking: '#{req.class}' against '#{path}")
-      res = http.request(req)
-      Log.debug("Response code: #{res.code}")
-      process_http_request(res, req, params)
+      @cluster.each do |machine|
+        begin
+          uri = URI(machine)
+          http = Net::HTTP.new(uri.host, uri.port)
+          http.read_timeout = timeout
+          setup_https(http)
+          req.basic_auth(user_name, password) if [user_name, password].all?
+          Log.debug("Invoking: '#{req.class}' against '#{path}")
+          res = http.request(req)
+          Log.debug("Response code: #{res.code}")
+          return process_http_request(res, req, params)
+        rescue Errno::ECONNREFUSED, Net::HTTPRequestTimeOut => e
+          next
+        end
+      end
+      raise AllNodesDown
     end
 
     def setup_https(http)

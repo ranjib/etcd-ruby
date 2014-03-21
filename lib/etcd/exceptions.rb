@@ -51,6 +51,7 @@ module Etcd
   # Etcd related error
   class WatcherCleared < Error; end
   class EventIndexCleared < Error; end
+  class AllNodesDown < Error; end
 
   ERROR_CODE_MAPPING = {
     # command related error
