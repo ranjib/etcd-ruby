@@ -40,4 +40,19 @@ describe 'Etcd watch' do
     thr.join
     expect(response.node.value).to eq(value)
   end
+
+
+  it 'with recrusive, waits and return when the key is updated' do
+    response = nil
+    key = random_key
+    value = uuid.generate
+    client.set("#{key}/subkey", value:"initial_value")
+    thr = Thread.new do
+      response = client.watch(key, recursive:true, timeout:3)
+    end
+    sleep 2
+    client.set("#{key}/subkey", value: value)
+    thr.join
+    expect(response.node.value).to eq(value)
+  end
 end
