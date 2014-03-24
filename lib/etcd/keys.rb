@@ -76,6 +76,7 @@ module Etcd
       index = opts[:waitIndex] || opts[:index]
       params[:waitIndex] = index unless index.nil?
       params[:consistent] = opts[:consistent] if opts.key?(:consistent)
+      params[:recursive] = opts[:recursive] if opts.key?(:recursive)
 
       response = api_execute(key_endpoint + key, :get,
                              timeout: timeout, params: params)
