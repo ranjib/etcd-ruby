@@ -1,7 +1,7 @@
 # Encoding: utf-8
 
 require 'spec_helper'
-
+=begin
 describe 'lock' do
 
   before(:all) do
@@ -52,3 +52,4 @@ describe 'lock' do
     end.to_not raise_error
   end
 end
+=end

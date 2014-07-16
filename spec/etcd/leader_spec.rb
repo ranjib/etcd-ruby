@@ -1,6 +1,7 @@
 # Encoding: utf-8
 
 require 'spec_helper'
+=begin
 
 describe 'mod leader' do
 
@@ -35,3 +36,4 @@ describe 'mod leader' do
     end.to raise_error
   end
 end
+=end

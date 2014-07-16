@@ -15,10 +15,10 @@ describe Etcd::Keys do
       it 'should be true for existing keys' do
         key = random_key
         client.create(key, value: 10)
-        expect(client.exists?(key)).to be_true
+        expect(client.exists?(key)).to be(true)
       end
       it 'should be true for existing keys' do
-        expect(client.exists?(random_key)).to be_false
+        expect(client.exists?(random_key)).to be(false)
       end
     end
 
@@ -26,13 +26,14 @@ describe Etcd::Keys do
       it 'should be able to create a directory' do
         d = random_key
         client.create(d, dir: true)
-        expect(client.get(d)).to be_true
+        expect(client.get(d)).to be_directory
       end
       context 'empty' do
         it 'should be able to delete with dir flag' do
           d = random_key
           client.create(d, dir: true)
-          expect(client.delete(d, dir: true)).to be_true
+          client.delete(d, dir: true)
+          expect(client.exist?(d)).to be(false)
         end
 
         it 'should not be able to delete without dir flag' do
