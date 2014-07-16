@@ -4,7 +4,7 @@ require 'timeout'
 
 module Etcd
   module Mod
-    # Implemetn Etcd's Leader module
+    # Implement Etcd's Leader module
     module Leader
       def mod_leader_endpoint
         '/mod/v2/leader'

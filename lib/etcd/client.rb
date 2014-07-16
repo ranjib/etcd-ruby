@@ -8,8 +8,6 @@ require 'etcd/log'
 require 'etcd/stats'
 require 'etcd/keys'
 require 'etcd/exceptions'
-require 'etcd/mod/lock'
-require 'etcd/mod/leader'
 
 module Etcd
   ##
@@ -27,8 +25,6 @@ module Etcd
 
     include Stats
     include Keys
-    include Mod::Lock
-    include Mod::Leader
 
     Config = Struct.new(:use_ssl, :verify_mode, :read_timeout, :ssl_key, :ca_file,
                         :user_name, :password, :allow_redirect, :ssl_cert)
