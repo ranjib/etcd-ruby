@@ -5,7 +5,7 @@ require "rubocop/rake_task"
 
 RSpec::Core::RakeTask.new("spec")
 
-Rubocop::RakeTask.new do |task|
+RuboCop::RakeTask.new do |task|
   task.fail_on_error = true
 end
 
