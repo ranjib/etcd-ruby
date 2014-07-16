@@ -27,9 +27,9 @@ client = Etcd.client(host: '127.0.0.1', port: 4003, allow_redirect: false) # won
 ```
 ### Set a key
 ```ruby
-client.set('/nodes/n1', 1)
+client.set('/nodes/n1', value: 1)
 # with ttl
-client.set('/nodes/n2', 2, 4)  # sets the ttl to 4 seconds
+client.set('/nodes/n2', value: 2, ttl: 4)  # sets the ttl to 4 seconds
 ```
 ### Get a key
 ```ruby
