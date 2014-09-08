@@ -40,7 +40,7 @@ describe Etcd::Client do
     it 'should redirect api request when allow_redirect is set' do
       key = random_key
       value = uuid.generate
-      resp = client.set(key, value: value)
+      resp = client.set(key, :value => value)
       resp.node.key.should eql key
       resp.node.value.should eql value
       client.get(key).value.should eql resp.value
@@ -51,7 +51,7 @@ describe Etcd::Client do
     before(:all) do
       key = random_key
       value = uuid.generate
-      @response = etcd_client.set(key, value: value)
+      @response = etcd_client.set(key, :value => value)
     end
 
     it '#etcd_index' do

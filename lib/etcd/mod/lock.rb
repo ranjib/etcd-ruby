@@ -14,7 +14,7 @@ module Etcd
         path = mod_lock_endpoint + key + "?ttl=#{ttl}"
         timeout = opts[:timeout] || 60
         Timeout.timeout(timeout) do
-          return api_execute(path, :post, params: opts).body
+          return api_execute(path, :post, :params => opts).body
         end
       end
 
@@ -25,19 +25,19 @@ module Etcd
         path = mod_lock_endpoint + key + "?ttl=#{ttl}"
         timeout = opts[:timeout] || 60
         Timeout.timeout(timeout) do
-          api_execute(path, :put, params: opts).body
+          api_execute(path, :put, :params => opts).body
         end
       end
 
       def get_lock(key, opts = {})
-        api_execute(mod_lock_endpoint + key, :get, params: opts).body
+        api_execute(mod_lock_endpoint + key, :get, :params => opts).body
       end
 
       def delete_lock(key, opts = {})
         unless opts.key?(:index) || opts.key?(:value)
           fail ArgumentError, 'You must pass index or value'
         end
-        api_execute(mod_lock_endpoint + key, :delete, params: opts)
+        api_execute(mod_lock_endpoint + key, :delete, :params => opts)
       end
 
       # rubocop:disable RescueException
@@ -49,7 +49,7 @@ module Etcd
         rescue Exception => e
           raise e
         ensure
-          delete_lock(key, index: lock_index)
+          delete_lock(key, :index => lock_index)
         end
       end
       # rubocop:enable RescueException

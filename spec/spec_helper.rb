@@ -3,7 +3,9 @@
 $LOAD_PATH.unshift(File.expand_path('../lib', __FILE__))
 $LOAD_PATH.unshift(File.expand_path('../spec', __FILE__))
 
-require 'coco'
+unless RUBY_VERSION < '1.9'
+  require 'coco'
+end
 require 'uuid'
 require 'etcd'
 require 'singleton'
@@ -44,7 +46,11 @@ module Etcd
       args << " -data-dir #{dir + client_port.to_s} -name node_#{client_port}"
       command = etcd_binary + args + ssl_args
       command << " -peers #{leader}"  unless @pids.empty? # if pids are not empty, theres a daemon already
-      pid = spawn(command, out: '/dev/null')
+      if ::Process.respond_to?(:spawn)
+        pid = spawn(command, :out => '/dev/null')
+      else
+        pid = IO.popen(command).pid
+      end
       sleep 1
       Process.detach(pid)
       pid
@@ -92,14 +98,14 @@ module Etcd
     end
 
     def etcd_ssl_client
-      Etcd.client(host: 'localhost') do |config|
+      Etcd.client(:host => 'localhost') do |config|
         config.use_ssl = true
         config.ca_file = File.expand_path('../data/ca.crt', __FILE__)
       end
     end
 
     def etcd_ssl_client
-      Etcd.client(host: 'localhost') do |config|
+      Etcd.client(:host => 'localhost') do |config|
         config.use_ssl = true
         config.ca_file = File.expand_path('../data/ca.crt', __FILE__)
       end
@@ -108,7 +114,7 @@ module Etcd
     def etcd_ssl_client_with_cert
       client_cert = File.expand_path('../data/client.crt', __FILE__)
       client_key = File.expand_path('../data/client.key', __FILE__)
-      Etcd.client(host: 'localhost') do |config|
+      Etcd.client(:host => 'localhost') do |config|
         config.use_ssl = true
         config.ca_file = File.expand_path('../data/ca.crt', __FILE__)
         config.ssl_cert = OpenSSL::X509::Certificate.new(File.read(client_cert))
@@ -121,7 +127,7 @@ module Etcd
     end
 
     def read_only_client
-      Etcd.client(allow_redirect: false, port: 4002, host: 'localhost')
+      Etcd.client(:allow_redirect => false, :port => 4002, :host => 'localhost')
     end
   end
 end

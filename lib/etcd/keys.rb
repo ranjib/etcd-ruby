@@ -19,7 +19,7 @@ module Etcd
     # This method takes the following parameters as arguments
     # * key - whose data is to be retrieved
     def get(key, opts = {})
-      response = api_execute(key_endpoint + key, :get, params: opts)
+      response = api_execute(key_endpoint + key, :get, :params => opts)
       Response.from_http_response(response)
     end
 
@@ -36,7 +36,7 @@ module Etcd
       [:ttl, :value, :dir, :prevExist, :prevValue, :prevIndex].each do |k|
         payload[k] = opts[k] if opts.key?(k)
       end
-      response = api_execute(path, :put, params: payload)
+      response = api_execute(path, :put, :params => payload)
       Response.from_http_response(response)
     end
 
@@ -45,7 +45,7 @@ module Etcd
     # This method takes the following parameters as arguments
     # * key - key to be deleted
     def delete(key, opts = {})
-      response = api_execute(key_endpoint + key, :delete, params: opts)
+      response = api_execute(key_endpoint + key, :delete, :params => opts)
       Response.from_http_response(response)
     end
 
@@ -70,7 +70,7 @@ module Etcd
     # @options [Fixnum] :index watch the specified key from given index
     # @options [Fixnum] :timeout specify http timeout
     def watch(key, opts = {})
-      params = { wait: true }
+      params = { :wait => true }
       fail ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
       timeout = opts[:timeout] || @read_timeout
       index = opts[:waitIndex] || opts[:index]
@@ -79,7 +79,7 @@ module Etcd
       params[:recursive] = opts[:recursive] if opts.key?(:recursive)
 
       response = api_execute(key_endpoint + key, :get,
-                             timeout: timeout, params: params)
+                             :timeout => timeout, :params => params)
       Response.from_http_response(response)
     end
 
@@ -90,7 +90,7 @@ module Etcd
       [:ttl, :value].each do |k|
         payload[k] = opts[k] if opts.key?(k)
       end
-      response = api_execute(path, :post, params: payload)
+      response = api_execute(path, :post, :params => payload)
       Response.from_http_response(response)
     end
 
@@ -104,11 +104,11 @@ module Etcd
     end
 
     def create(key, opts = {})
-      set(key, opts.merge(prevExist: false))
+      set(key, opts.merge(:prevExist => false))
     end
 
     def update(key, opts = {})
-      set(key, opts.merge(prevExist: true))
+      set(key, opts.merge(:prevExist => true))
     end
 
     def eternal_watch(key, index = nil)

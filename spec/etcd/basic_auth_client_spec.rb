@@ -12,7 +12,7 @@ describe 'Etcd basic auth client' do
   end
 
   let(:client) do
-    Etcd.client(host: 'localhost') do |config|
+    Etcd.client(:host => 'localhost') do |config|
       config.user_name = 'test'
       config.password = 'pwd'
     end
@@ -30,7 +30,7 @@ describe 'Etcd basic auth client' do
     Net::HTTPRequest.any_instance.should_receive(:basic_auth).with('test', 'pwd')
     key = random_key
     value = uuid.generate
-    client.set(key, value: value)
+    client.set(key, :value => value)
     sleep 1
     expect(read_only_client.get(key).value).to eq(value)
   end

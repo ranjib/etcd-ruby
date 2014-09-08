@@ -21,11 +21,11 @@ describe 'Etcd watch' do
     value1 = uuid.generate
     value2 = uuid.generate
 
-    index1 = client.create(key, value: value1).node.modifiedIndex
-    index2 = client.test_and_set(key, value: value2, prevValue: value1).node.modifiedIndex
+    index1 = client.create(key, :value => value1).node.modifiedIndex
+    index2 = client.test_and_set(key, :value => value2, :prevValue => value1).node.modifiedIndex
 
-    expect(client.watch(key, index: index1).node.value).to eq(value1)
-    expect(client.watch(key, index: index2).node.value).to eq(value2)
+    expect(client.watch(key, :index => index1).node.value).to eq(value1)
+    expect(client.watch(key, :index => index2).node.value).to eq(value2)
   end
 
   it 'with index, waits and return when the key is updated' do
@@ -36,7 +36,7 @@ describe 'Etcd watch' do
       response = client.watch(key)
     end
     sleep 2
-    client.set(key, value: value)
+    client.set(key, :value => value)
     thr.join
     expect(response.node.value).to eq(value)
   end
@@ -46,12 +46,12 @@ describe 'Etcd watch' do
     response = nil
     key = random_key
     value = uuid.generate
-    client.set("#{key}/subkey", value:"initial_value")
+    client.set("#{key}/subkey", :value => "initial_value")
     thr = Thread.new do
-      response = client.watch(key, recursive:true, timeout:3)
+      response = client.watch(key, :recursive => true, :timeout => 3)
     end
     sleep 2
-    client.set("#{key}/subkey", value: value)
+    client.set("#{key}/subkey", :value => value)
     thr.join
     expect(response.node.value).to eq(value)
   end

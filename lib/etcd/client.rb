@@ -8,6 +8,7 @@ require 'etcd/log'
 require 'etcd/stats'
 require 'etcd/keys'
 require 'etcd/exceptions'
+require 'etcd/compat187' if RUBY_VERSION < '1.9'
 
 module Etcd
   ##
@@ -15,13 +16,15 @@ module Etcd
   # etcd api calls. It also provides few additional methods beyond the core
   # etcd api, like Etcd::Client#lock and Etcd::Client#eternal_watch, they
   # are defined in separate modules and included in this class
+  #
+  # rubocop:disable ClassLength
   class Client
 
     extend Forwardable
 
-    HTTP_REDIRECT = ->(r) { r.is_a? Net::HTTPRedirection }
-    HTTP_SUCCESS = ->(r) { r.is_a? Net::HTTPSuccess }
-    HTTP_CLIENT_ERROR = ->(r) { r.is_a? Net::HTTPClientError }
+    HTTP_SUCCESS      = /^2/
+    HTTP_REDIRECT     = /^3/
+    HTTP_CLIENT_ERROR = /^4/
 
     include Stats
     include Keys
@@ -134,7 +137,7 @@ module Etcd
 
     # need to ahve original request to process the response when it redirects
     def process_http_request(res, req = nil, params = nil)
-      case res
+      case res.code
       when HTTP_SUCCESS
         Log.debug('Http success')
         res
@@ -144,7 +147,7 @@ module Etcd
           @host = uri.host
           @port = uri.port
           Log.debug("Http redirect, setting new host to: #{@host}:#{@port}, and retrying")
-          api_execute(uri.path, req.method.downcase.to_sym, params: params)
+          api_execute(uri.path, req.method.downcase.to_sym, :params => params)
         else
           Log.debug('Http redirect not allowed')
           res.error!
@@ -153,6 +156,7 @@ module Etcd
         fail Error.from_http_response(res)
       else
         Log.debug('Http error')
+        Log.debug("Response code: #{res.code}")
         Log.debug(res.body)
         res.error!
       end
@@ -162,7 +166,11 @@ module Etcd
     def build_http_request(klass, path, params = nil, body = nil)
       path += '?' + URI.encode_www_form(params) unless params.nil?
       req = klass.new(path)
-      req.body = URI.encode_www_form(body) unless body.nil?
+      if RUBY_VERSION < '1.9'
+        req.set_form_data(body) unless body.nil?
+      else
+        req.body = URI.encode_www_form(body) unless body.nil?
+      end
       Etcd::Log.debug("Built #{klass} path:'#{path}'  body:'#{req.body}'")
       req
     end

@@ -18,7 +18,7 @@ describe Etcd::Node do
     parent = random_key
     child = random_key
     value = uuid.generate
-    client.set(parent + child, value: value)
+    client.set(parent + child, :value => value)
     expect(client.get(parent + child)).to_not be_directory
     expect(client.get(parent)).to be_directory
   end
@@ -26,7 +26,7 @@ describe Etcd::Node do
   context '#children' do
     it 'should raise exception when invoked against a leaf node' do
       parent = random_key
-      client.create(random_key, value: 10)
+      client.create(random_key, :value => 10)
       expect do
         client.get(random_key).children
       end.to raise_error

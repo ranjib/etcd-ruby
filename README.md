@@ -17,6 +17,11 @@ Or install it yourself as:
     $ gem install etcd
 
 ## Usage
+
+:warning: Most of the examples below use the "new" hash syntax introduced
+in Ruby 1.9, but the library supports old-style hash syntax from 1.8.7
+as needed by some enterprise linux distros.
+
 ### Create a client object
 ```ruby
 client = Etcd.client # this will create a client against etcd server running on localhost on port 4001

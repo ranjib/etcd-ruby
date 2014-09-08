@@ -4,6 +4,7 @@ before_install:
   - bundle install --path .bundle
 
 rvm:
+  - 1.8.7
   - 1.9.3
   - 2.0.0
   - 2.1.0
