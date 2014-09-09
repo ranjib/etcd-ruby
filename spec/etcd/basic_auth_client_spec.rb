@@ -27,7 +27,7 @@ describe 'Etcd basic auth client' do
   end
 
   it 'should set basic auth' do
-    Net::HTTPRequest.any_instance.should_receive(:basic_auth).with('test', 'pwd')
+    expect_any_instance_of(Net::HTTPRequest).to receive(:basic_auth).with('test', 'pwd')
     key = random_key
     value = uuid.generate
     client.set(key, :value => value)

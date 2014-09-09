@@ -134,4 +134,10 @@ end
 
 RSpec.configure do |c|
   c.include Etcd::SpecHelper
+
+  # Allow both "should" and "expect" syntax.
+  # https://www.relishapp.com/rspec/rspec-expectations/docs/syntax-configuration
+  c.expect_with :rspec do |e|
+    e.syntax = [:should, :expect]
+  end
 end
