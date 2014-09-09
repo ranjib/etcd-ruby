@@ -25,6 +25,31 @@ client = Etcd.client(host: '127.0.0.1', port: 4003)
 client = Etcd.client(:user_name => 'test', :password => 'pwd') # populates the authentication header for basic HTTP auth with user name and password (useful for proxied connections)
 client = Etcd.client(host: '127.0.0.1', port: 4003, allow_redirect: false) # wont let you run sensitive commands on non-leader machines, default is true
 ```
+
+### Create a client object to connect to a SSL etcd instance
+
+See [Etcd config](https://github.com/coreos/etcd/blob/master/Documentation/configuration.md) to setup `etcd` in SSL mode.
+
+Assuming you have these:
+* `myca.crt` - Your internal CAs certificate
+* `my-cert.crt` - The "client" cert 
+* `my-cert.key` - The key corresponding to `my-cert.crt`
+
+If you were using self signed Certs and have your own CA, You would have set `-ca-file` in your etcd config also to use `myca.crt`.
+
+```ruby
+client=Etcd.client(
+	:host => "your-etcd-host",
+	:port => 443,
+	:use_ssl => true,
+	:ca_file => "/etc/ssl/myca.crt",
+	:ssl_cert => "/etc/ssl/my-cert.crt",
+	:ssl_key => "/etc/ssl/my-cert.key"
+)
+
+```
+
+
 ### Set a key
 ```ruby
 client.set('/nodes/n1', value: 1)

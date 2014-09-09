@@ -27,7 +27,7 @@ module Etcd
     include Keys
 
     Config = Struct.new(:use_ssl, :verify_mode, :read_timeout, :ssl_key, :ca_file,
-                        :user_name, :password, :allow_redirect, :ssl_cert)
+                        :user_name, :password, :allow_redirect, :ssl_cert, :ssl_passphrase)
 
     def_delegators :@config, :use_ssl, :verify_mode, :read_timeout
     def_delegators :@config, :user_name, :password, :allow_redirect
@@ -54,6 +54,10 @@ module Etcd
       @config.user_name = opts[:user_name] || nil
       @config.password = opts[:password] || nil
       @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
+      @config.ca_file = opts.key?(:ca_file) ? opts[:ca_file] : nil
+      @config.ssl_cert = opts.key?(:ssl_cert) ? opts[:ssl_cert] : nil
+      @config.ssl_key = opts.key?(:ssl_key) ? opts[:ssl_key] : nil
+			@config.ssl_passphrase = opts.key?(:ssl_passphrase) ? opts[:ssl_passphrase] : nil
       yield @config if block_given?
     end
     # rubocop:enable CyclomaticComplexity
@@ -114,12 +118,12 @@ module Etcd
       http.use_ssl = use_ssl
       http.verify_mode = verify_mode
       unless config.ssl_cert.nil?
-        Log.debug('Setting up ssl cert')
-        http.cert = config.ssl_cert
+        Log.debug("Setting up ssl cert from #{config.ssl_cert}")
+        http.cert = OpenSSL::X509::Certificate.new(File.read(config.ssl_cert))
       end
       unless config.ssl_key.nil?
-        Log.debug('Setting up ssl key')
-        http.key = config.ssl_key
+        Log.debug("Setting up ssl key from #{config.ssl_key}")
+        http.key = OpenSSL::PKey::RSA.new(File.read(config.ssl_key), config.ssl_passphrase)
       end
       unless config.ca_file.nil?
         Log.debug('Setting up ssl ca file to :' + config.ca_file)
