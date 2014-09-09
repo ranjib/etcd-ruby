@@ -8,3 +8,5 @@ _yardoc
 coverage
 spec/reports
 tmp
+etcd-v*-linux-amd64.tar.gz
+etcd-v*-linux-amd64/
