@@ -54,6 +54,11 @@ module Etcd
       @config.user_name = opts[:user_name] || nil
       @config.password = opts[:password] || nil
       @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
+      @config.ca_file = opts.key?(:ca_file) ? opts[:ca_file] : nil
+      #Provide a OpenSSL X509 cert here and not the path. See README
+      @config.ssl_cert = opts.key?(:ssl_cert) ? opts[:ssl_cert] : nil
+      #Provide the key (content) and not just the filename here. 
+      @config.ssl_key = opts.key?(:ssl_key) ? opts[:ssl_key] : nil
       yield @config if block_given?
     end
     # rubocop:enable CyclomaticComplexity
