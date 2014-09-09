@@ -69,6 +69,8 @@ module Etcd
     # @options [Hash] additional options for watching a key
     # @options [Fixnum] :index watch the specified key from given index
     # @options [Fixnum] :timeout specify http timeout
+    #
+    # rubocop:disable CyclomaticComplexity
     def watch(key, opts = {})
       params = { :wait => true }
       fail ArgumentError, 'Second argument must be a hash' unless opts.is_a?(Hash)
@@ -82,6 +84,7 @@ module Etcd
                              :timeout => timeout, :params => params)
       Response.from_http_response(response)
     end
+    # rubocop:enable CyclomaticComplexity
 
     def create_in_order(dir, opts = {})
       path  = key_endpoint + dir

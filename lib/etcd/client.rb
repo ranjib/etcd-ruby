@@ -19,7 +19,6 @@ module Etcd
   #
   # rubocop:disable ClassLength
   class Client
-
     extend Forwardable
 
     HTTP_SUCCESS      = /^2/
@@ -35,7 +34,6 @@ module Etcd
     def_delegators :@config, :use_ssl, :verify_mode, :read_timeout
     def_delegators :@config, :user_name, :password, :allow_redirect
 
-
     attr_reader :host, :port, :http, :config
 
     ##
@@ -45,7 +43,7 @@ module Etcd
     # @opts [String] :host IP address of the etcd server (default 127.0.0.1)
     # @opts [Fixnum] :port Port number of the etcd server (default 4001)
     # @opts [Fixnum] :read_timeout set HTTP read timeouts (default 60)
-    # rubocop:disable CyclomaticComplexity
+    # rubocop:disable CyclomaticComplexity,MethodLength,PerceivedComplexity
     def initialize(opts = {})
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
@@ -58,13 +56,13 @@ module Etcd
       @config.password = opts[:password] || nil
       @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
       @config.ca_file = opts.key?(:ca_file) ? opts[:ca_file] : nil
-      #Provide a OpenSSL X509 cert here and not the path. See README
+      # Provide a OpenSSL X509 cert here and not the path. See README
       @config.ssl_cert = opts.key?(:ssl_cert) ? opts[:ssl_cert] : nil
-      #Provide the key (content) and not just the filename here. 
+      # Provide the key (content) and not just the filename here.
       @config.ssl_key = opts.key?(:ssl_key) ? opts[:ssl_key] : nil
       yield @config if block_given?
     end
-    # rubocop:enable CyclomaticComplexity
+    # rubocop:enable CyclomaticComplexity,MethodLength,PerceivedComplexity
 
     # Returns the etcd api version that will be used for across API methods
     def version_prefix
@@ -118,6 +116,7 @@ module Etcd
       process_http_request(res, req, params)
     end
 
+    # rubocop:disable Style/GuardClause
     def setup_https(http)
       http.use_ssl = use_ssl
       http.verify_mode = verify_mode
@@ -134,6 +133,7 @@ module Etcd
         http.ca_file = config.ca_file
       end
     end
+    # rubocop:enable Style/GuardClause
 
     # need to ahve original request to process the response when it redirects
     def process_http_request(res, req = nil, params = nil)
@@ -175,4 +175,5 @@ module Etcd
       req
     end
   end
+  # rubocop:enable ClassLength
 end

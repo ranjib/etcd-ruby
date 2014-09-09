@@ -9,7 +9,7 @@ module Etcd
     alias_method :createdIndex, :created_index
     alias_method :modifiedIndex, :modified_index
 
-    # rubocop:disable MethodLength
+    # rubocop:disable MethodLength,Style/GuardClause
     def initialize(opts = {})
       @created_index = opts['createdIndex']
       @modified_index = opts['modifiedIndex']
@@ -19,12 +19,13 @@ module Etcd
       @expiration = opts['expiration']
       @dir = opts['dir']
 
-      if opts['dir'] && (!!opts['nodes'])
+      if opts['dir'] && (!opts['nodes'].nil?)
         opts['nodes'].each do |data|
           children << Node.new(data)
         end
       end
     end
+    # rubocop:enable MethodLength,Style/GuardClause
 
     def <=>(other)
       key <=> other.key
@@ -39,7 +40,7 @@ module Etcd
     end
 
     def directory?
-      !! @dir
+      !@dir.nil?
     end
   end
 end

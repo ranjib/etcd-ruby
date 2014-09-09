@@ -42,7 +42,7 @@ module Etcd
 
       # rubocop:disable RescueException
       def lock(key, ttl, opts = {})
-        key = "/" + key unless key.start_with? '/'
+        key = '/' + key unless key.start_with? '/'
         lock_index = acquire_lock(key, ttl, opts)
         begin
           yield key
