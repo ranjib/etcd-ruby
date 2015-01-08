@@ -1,13 +1,13 @@
 before_install:
-  - wget -c https://github.com/coreos/etcd/releases/download/v0.4.6/etcd-v0.4.6-linux-amd64.tar.gz
-  - tar -zxf etcd-v0.4.6-linux-amd64.tar.gz
+  - wget -c https://github.com/coreos/etcd/releases/download/v2.0.0-rc.1/etcd-v2.0.0-rc.1-linux-amd64.tar.gz
+  - tar -zxf etcd-v2.0.0-rc.1-linux-amd64.tar.gz
   - bundle install --path .bundle
 
 rvm:
   - 1.9.3
-  - 2.0.0
   - 2.1.0
+  - 2.2.0
 branches:
   only:
     - master
-script: "ETCD_BIN=./etcd-v0.4.6-linux-amd64/etcd bundle exec rake spec"
+script: "ETCD_BIN=./etcd-v2.0.0-rc.1-linux-amd64/etcd bundle exec rake spec"
