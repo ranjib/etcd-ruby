@@ -1,7 +1,7 @@
 before_install:
   - wget -c https://github.com/coreos/etcd/releases/download/v2.0.0-rc.1/etcd-v2.0.0-rc.1-linux-amd64.tar.gz
   - tar -zxf etcd-v2.0.0-rc.1-linux-amd64.tar.gz
-  - bundle install --path .bundle
+  - bundle install
 
 rvm:
   - 1.9.3
