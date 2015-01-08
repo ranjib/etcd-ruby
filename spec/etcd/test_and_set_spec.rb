@@ -3,15 +3,6 @@
 require 'spec_helper'
 
 describe 'Etcd test_and_set' do
-
-  before(:all) do
-    start_daemon
-  end
-
-  after(:all) do
-    stop_daemon
-  end
-
   let(:client) do
     etcd_client
   end
@@ -21,7 +12,7 @@ describe 'Etcd test_and_set' do
     old_value = uuid.generate
     new_value = uuid.generate
     resp = client.set(key, value: old_value)
-    resp.node.value.should eql old_value
+    expect(resp.node.value).to eq(old_value)
     client.test_and_set(key, value: new_value, prevValue: old_value)
     expect(client.get(key).value).to eq(new_value)
   end

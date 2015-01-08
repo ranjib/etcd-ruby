@@ -3,17 +3,12 @@
 require 'spec_helper'
 
 describe Etcd::Stats do
-
-  before(:all) do
-    start_daemon(5)
-  end
-
-  after(:all) do
-    stop_daemon
-  end
-
   let(:client) do
     etcd_client
+  end
+
+  let(:leader) do
+    etcd_leader
   end
 
   describe 'of leader' do
@@ -23,11 +18,7 @@ describe Etcd::Stats do
     end
 
     it 'should contain a key for leader' do
-      expect(stats['leader']).to_not be_nil
-    end
-
-    it 'should have 4 followers (since we spawn 5 node etcd cluster)' do
-      expect(stats['followers'].keys.size).to eq(4)
+      expect(leader.stats(:leader)).to_not be_nil
     end
   end
 

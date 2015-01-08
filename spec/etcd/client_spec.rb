@@ -1,29 +1,12 @@
 require 'spec_helper'
 
 describe Etcd::Client do
-
-  before(:all) do
-    start_daemon(3)
-  end
-
-  after(:all) do
-    stop_daemon
-  end
-
   let(:client) do
     etcd_client
   end
 
-  it 'should return the leader address' do
-    expect(client.leader).to_not be_nil
-  end
-
-  it '#machines' do
-    expect(client.machines).to include('http://127.0.0.1:4001')
-  end
-
-  it '#version' do
-    expect(client.version).to match(/^etcd v?0\.\d+\.\d+(\+git)?/)
+  it '#version' do #etcd 2.0.0-rc.1
+    expect(client.version).to match(/^etcd v?\d+\.\d+\.\d+.*$/)
   end
 
   it '#version_prefix' do
@@ -35,15 +18,6 @@ describe Etcd::Client do
       expect do
         client.api_execute('/v2/keys/x', :do)
       end.to raise_error
-    end
-
-    it 'should redirect api request when allow_redirect is set' do
-      key = random_key
-      value = uuid.generate
-      resp = client.set(key, value: value)
-      resp.node.key.should eql key
-      resp.node.value.should eql value
-      client.get(key).value.should eql resp.value
     end
   end
 

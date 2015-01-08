@@ -26,12 +26,19 @@ module Etcd
     include Stats
     include Keys
 
-    Config = Struct.new(:use_ssl, :verify_mode, :read_timeout, :ssl_key, :ca_file,
-                        :user_name, :password, :allow_redirect, :ssl_cert)
+    Config = Struct.new(
+      :use_ssl,
+      :verify_mode,
+      :read_timeout,
+      :ssl_key,
+      :ca_file,
+      :user_name,
+      :password,
+      :ssl_cert
+    )
 
     def_delegators :@config, :use_ssl, :verify_mode, :read_timeout
-    def_delegators :@config, :user_name, :password, :allow_redirect
-
+    def_delegators :@config, :user_name, :password
 
     attr_reader :host, :port, :http, :config
 
@@ -48,12 +55,10 @@ module Etcd
       @port = opts[:port] || 4001
       @config = Config.new
       @config.read_timeout = opts[:read_timeout] || 60
-      @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
       @config.use_ssl = opts[:use_ssl] || false
       @config.verify_mode = opts.key?(:verify_mode) ? opts[:verify_mode] : OpenSSL::SSL::VERIFY_PEER
       @config.user_name = opts[:user_name] || nil
       @config.password = opts[:password] || nil
-      @config.allow_redirect = opts.key?(:allow_redirect) ? opts[:allow_redirect] : true
       @config.ca_file = opts.key?(:ca_file) ? opts[:ca_file] : nil
       #Provide a OpenSSL X509 cert here and not the path. See README
       @config.ssl_cert = opts.key?(:ssl_cert) ? opts[:ssl_cert] : nil
@@ -73,14 +78,9 @@ module Etcd
       api_execute('/version', :get).body
     end
 
-    # Returns array of all machines in the cluster
-    def machines
-      api_execute(version_prefix + '/machines', :get).body.split(',').map(&:strip)
-    end
-
     # Get the current leader
     def leader
-      api_execute(version_prefix + '/leader', :get).body.strip
+      api_execute(version_prefix + '/stats/leader', :get).body.strip
     end
 
     # This method sends api request to etcd server.
@@ -104,14 +104,14 @@ module Etcd
       else
         fail "Unknown http action: #{method}"
       end
-      timeout = options[:timeout] || @read_timeout
       http = Net::HTTP.new(host, port)
-      http.read_timeout = timeout
+      http.read_timeout = options[:timeout] || read_timeout
       setup_https(http)
       req.basic_auth(user_name, password) if [user_name, password].all?
       Log.debug("Invoking: '#{req.class}' against '#{path}")
       res = http.request(req)
       Log.debug("Response code: #{res.code}")
+      Log.debug("Response body: #{res.body}")
       process_http_request(res, req, params)
     end
 
@@ -138,17 +138,6 @@ module Etcd
       when HTTP_SUCCESS
         Log.debug('Http success')
         res
-      when HTTP_REDIRECT
-        if allow_redirect
-          uri = URI(res['location'])
-          @host = uri.host
-          @port = uri.port
-          Log.debug("Http redirect, setting new host to: #{@host}:#{@port}, and retrying")
-          api_execute(uri.path, req.method.downcase.to_sym, params: params)
-        else
-          Log.debug('Http redirect not allowed')
-          res.error!
-        end
       when HTTP_CLIENT_ERROR
         fail Error.from_http_response(res)
       else

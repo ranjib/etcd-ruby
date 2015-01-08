@@ -3,17 +3,8 @@
 require 'spec_helper'
 
 describe 'Etcd specs for the main etcd README examples' do
-
-  before(:all) do
-    start_daemon
-  end
-
-  after(:all) do
-    stop_daemon
-  end
-
   let(:client) do
-    Etcd.client
+    etcd_client
   end
 
   shared_examples 'response with valid node data' do |action|
@@ -307,7 +298,6 @@ describe 'Etcd specs for the main etcd README examples' do
   end
 
   context 'hidden nodes' do
-
     before(:all) do
       etcd_client.set('/_message', value: 'Hello Hidden World')
       etcd_client.set('/message', value: 'Hello World')
