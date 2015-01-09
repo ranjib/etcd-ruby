@@ -16,7 +16,6 @@ module Etcd
   # etcd api, like Etcd::Client#lock and Etcd::Client#eternal_watch, they
   # are defined in separate modules and included in this class
   class Client
-
     extend Forwardable
 
     HTTP_REDIRECT = ->(r) { r.is_a? Net::HTTPRedirection }
@@ -60,9 +59,9 @@ module Etcd
       @config.user_name = opts[:user_name] || nil
       @config.password = opts[:password] || nil
       @config.ca_file = opts.key?(:ca_file) ? opts[:ca_file] : nil
-      #Provide a OpenSSL X509 cert here and not the path. See README
+      # Provide a OpenSSL X509 cert here and not the path. See README
       @config.ssl_cert = opts.key?(:ssl_cert) ? opts[:ssl_cert] : nil
-      #Provide the key (content) and not just the filename here. 
+      # Provide the key (content) and not just the filename here.
       @config.ssl_key = opts.key?(:ssl_key) ? opts[:ssl_key] : nil
       yield @config if block_given?
     end
@@ -112,28 +111,28 @@ module Etcd
       res = http.request(req)
       Log.debug("Response code: #{res.code}")
       Log.debug("Response body: #{res.body}")
-      process_http_request(res, req, params)
+      process_http_request(res)
     end
 
     def setup_https(http)
       http.use_ssl = use_ssl
       http.verify_mode = verify_mode
-      unless config.ssl_cert.nil?
+      if config.ssl_cert
         Log.debug('Setting up ssl cert')
         http.cert = config.ssl_cert
       end
-      unless config.ssl_key.nil?
+      if config.ssl_key
         Log.debug('Setting up ssl key')
         http.key = config.ssl_key
       end
-      unless config.ca_file.nil?
+      if config.ca_file
         Log.debug('Setting up ssl ca file to :' + config.ca_file)
         http.ca_file = config.ca_file
       end
     end
 
-    # need to ahve original request to process the response when it redirects
-    def process_http_request(res, req = nil, params = nil)
+    # need to have original request to process the response when it redirects
+    def process_http_request(res)
       case res
       when HTTP_SUCCESS
         Log.debug('Http success')

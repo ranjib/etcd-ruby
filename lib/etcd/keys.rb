@@ -78,8 +78,12 @@ module Etcd
       params[:consistent] = opts[:consistent] if opts.key?(:consistent)
       params[:recursive] = opts[:recursive] if opts.key?(:recursive)
 
-      response = api_execute(key_endpoint + key, :get,
-                             timeout: timeout, params: params)
+      response = api_execute(
+        key_endpoint + key,
+        :get,
+        timeout: timeout,
+        params: params
+      )
       Response.from_http_response(response)
     end
 
