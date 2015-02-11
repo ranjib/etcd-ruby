@@ -1,9 +1,9 @@
 AllCops:
-  Includes:
+  Include:
     - Gemfile
-    - lib/**
-  Excludes:
-    - spec/**
+    - lib/**/*
+  Exclude:
+    - spec/**/*
 
 Encoding:
   Enabled: false

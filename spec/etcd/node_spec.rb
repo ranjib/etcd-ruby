@@ -1,15 +1,6 @@
 require 'spec_helper'
 
 describe Etcd::Node do
-
-  before(:all) do
-    start_daemon
-  end
-
-  after(:all) do
-    stop_daemon
-  end
-
   let(:client) do
     etcd_client
   end

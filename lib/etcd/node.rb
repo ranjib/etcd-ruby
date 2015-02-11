@@ -19,7 +19,7 @@ module Etcd
       @expiration = opts['expiration']
       @dir = opts['dir']
 
-      if opts['dir'] && (!!opts['nodes'])
+      if opts['dir'] && opts['nodes']
         opts['nodes'].each do |data|
           children << Node.new(data)
         end
@@ -39,7 +39,7 @@ module Etcd
     end
 
     def directory?
-      !! @dir
+      ! @dir.nil?
     end
   end
 end

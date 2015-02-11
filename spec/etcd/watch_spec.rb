@@ -3,19 +3,9 @@
 require 'spec_helper'
 
 describe 'Etcd watch' do
-
-  before(:all) do
-    start_daemon
-  end
-
-  after(:all) do
-    stop_daemon
-  end
-
   let(:client) do
     etcd_client
   end
-
   it 'without index, returns the value at a particular index' do
     key = random_key(4)
     value1 = uuid.generate

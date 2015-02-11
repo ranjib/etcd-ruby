@@ -1,9 +1,7 @@
 require 'spec_helper'
 
 describe Etcd::Keys do
-
   shared_examples 'basic key operation' do
-
     it '#set/#get' do
       key = random_key
       value = uuid.generate
@@ -65,42 +63,9 @@ describe Etcd::Keys do
       end
     end
   end
-
   context 'without ssl' do
-    before(:all) do
-      start_daemon
-    end
-    after(:all) do
-      stop_daemon
-    end
     let(:client) do
       etcd_client
-    end
-    it_should_behave_like 'basic key operation'
-  end
-
-  context 'with ssl' do
-    before(:all) do
-      start_daemon(1, use_ssl: true)
-    end
-    after(:all) do
-      stop_daemon
-    end
-    let(:client) do
-      etcd_ssl_client
-    end
-    it_should_behave_like 'basic key operation'
-  end
-
-  context 'with ssl and client certificate' do
-    before(:all) do
-      start_daemon(1, use_ssl: true, check_client_cert: true )
-    end
-    after(:all) do
-      stop_daemon
-    end
-    let(:client) do
-      etcd_ssl_client_with_cert
     end
     it_should_behave_like 'basic key operation'
   end
