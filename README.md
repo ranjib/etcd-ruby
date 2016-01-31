@@ -69,7 +69,7 @@ client.delete('/nodes/', recursive: true)
 
 ### Test and set
 ```ruby
-client.test_and_set('/nodes/n2', 2, 4) # will set /nodes/n2 's value to 2 only if its previous value was 4
+client.test_and_set('/nodes/n2', value: 2, prevValue: 4) # will set /nodes/n2 's value to 2 only if its previous value was 4
 
 ```
 
@@ -94,7 +94,7 @@ client.leader
 ```
 More examples and api details can be found in the [wiki](https://github.com/ranjib/etcd-ruby/wiki)
 
-## Contributors 
+## Contributors
 * Ranjib Dey
 * [Jesse Nelson](https://github.com/spheromak)
 * [Nilesh Bairagi](https://github.com/Bairagi)
