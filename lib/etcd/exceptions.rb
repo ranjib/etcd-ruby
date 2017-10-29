@@ -6,11 +6,11 @@ require 'json'
 module Etcd
   # Represents all etcd custom errors
   class Error < StandardError
-    attr_reader :cause, :error_code, :index
+    attr_reader :caused_by, :error_code, :index
 
     def initialize(opts = {})
       super(opts['message'])
-      @cause = opts['cause']
+      @caused_by = opts['cause']
       @index = opts['index']
       @error_code = opts['errorCode']
     end
@@ -24,7 +24,7 @@ module Etcd
     end
 
     def inspect
-      "<#{self.class}: index:#{index}, code:#{error_code}, cause:'#{cause}'>"
+      "<#{self.class}: index:#{index}, code:#{error_code}, cause:'#{caused_by}'>"
     end
   end
 
