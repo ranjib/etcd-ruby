@@ -83,11 +83,6 @@ client.watch('/nodes/n1') # will wait till the key is changed, and return once i
 client.get('/nodes')
 ```
 
-### Get machines in the cluster
-```ruby
-client.machines
-```
-
 ### Get leader of the cluster
 ```ruby
 client.leader
