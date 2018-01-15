@@ -93,6 +93,30 @@ describe 'Etcd watch' do
 
       expect(response.node.value).to eq(value)
     end
+
+    it "resumes watching after the index of the last response" do
+      responses = []
+      client.set(key, value:"initial_value")
+
+      thr = Thread.new do
+        controlling_loop do |control|
+
+          client.eternal_watch(key, timeout: 3) do |response_in_loop|
+            responses << response_in_loop
+            sleep 1
+          end
+
+        end
+      end
+
+      sleep 1
+      client.set(key, value: 'value-1')
+      client.set(key, value: 'value-2')
+      thr.join
+
+      expect(responses.length).to eq 2
+      expect(responses.map { |r| r.node.value }).to eq ['value-1', 'value-2']
+    end
   end
 
   private
