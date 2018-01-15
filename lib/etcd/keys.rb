@@ -115,9 +115,9 @@ module Etcd
       set(key, opts.merge(prevExist: true))
     end
 
-    def eternal_watch(key, index = nil)
+    def eternal_watch(key, opts = {})
       loop do
-        response = watch(key, index)
+        response = watch(key, opts)
         yield response
       end
     end
