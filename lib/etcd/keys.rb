@@ -116,9 +116,12 @@ module Etcd
     end
 
     def eternal_watch(key, opts = {})
+      next_index = opts[:waitIndex]
       loop do
+        opts = opts.merge(waitIndex: next_index) if next_index
         response = watch(key, opts)
         yield response
+        next_index = response.node.modified_index + 1
       end
     end
 
