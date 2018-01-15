@@ -44,4 +44,71 @@ describe 'Etcd watch' do
     thr.join
     expect(response.node.value).to eq(value)
   end
+
+  context :eternal_watch do
+    let(:key) { random_key }
+    let(:value) { uuid.generate }
+
+    it 'should loop multiple times collecting responses' do
+      responses = []
+      client.set(key, value: 'initial_value')
+
+      thr = Thread.new do
+        controlling_loop do |control|
+
+          client.eternal_watch(key, timeout: 3) do |response_in_loop|
+            responses << response_in_loop
+          end
+
+        end
+      end
+
+      sleep 2
+      client.set(key, value: 'value-1')
+      client.set(key, value: 'value-2')
+      thr.join
+
+      expect(responses.length).to eq 2
+      expect(responses.map { |r| r.node.value }).to eq ['value-1', 'value-2']
+    end
+
+    it 'can watch recursive keys' do
+      response = nil
+      client.set("#{key}/subkey", value:"initial_value")
+
+      thr = Thread.new do
+        controlling_loop do |control|
+
+          client.eternal_watch(key, recursive: true) do |response_in_loop|
+            response = response_in_loop
+            control.stop
+          end
+
+        end
+      end
+
+      sleep 2
+      client.set("#{key}/subkey", value: value)
+      thr.join
+
+      expect(response.node.value).to eq(value)
+    end
+  end
+
+  private
+
+  class LoopControl
+    class Stop < Exception; end
+    def stop
+      raise Stop
+    end
+  end
+
+  def controlling_loop
+    control = LoopControl.new
+    begin
+      yield control
+    rescue LoopControl::Stop, Net::ReadTimeout
+    end
+  end
 end
