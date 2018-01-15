@@ -31,7 +31,6 @@ describe 'Etcd watch' do
     expect(response.node.value).to eq(value)
   end
 
-
   it 'with recrusive, waits and return when the key is updated' do
     response = nil
     key = random_key
