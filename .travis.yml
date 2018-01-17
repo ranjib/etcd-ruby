@@ -5,9 +5,8 @@ before_install:
   - bundle install
 
 rvm:
-  - 1.9.3
-  - 2.1.0
   - 2.2.0
+  - 2.5.0
 branches:
   only:
     - master
