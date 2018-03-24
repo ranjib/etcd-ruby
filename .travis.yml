@@ -11,5 +11,5 @@ rvm:
   - 2.5.0
 branches:
   only:
-    - use_faraday
+    - master
 script: "ETCD_BIN=./etcd-v2.0.0-rc.1-linux-amd64/etcd bundle exec rake spec"
