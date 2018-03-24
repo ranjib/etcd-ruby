@@ -1,9 +1,8 @@
 # Encoding: utf-8
 
 require 'openssl'
-require 'net/http'
-require 'net/https'
 require 'json'
+require 'faraday'
 require 'etcd/log'
 require 'etcd/stats'
 require 'etcd/keys'
@@ -18,10 +17,6 @@ module Etcd
   class Client
     extend Forwardable
 
-    HTTP_REDIRECT = ->(r) { r.is_a? Net::HTTPRedirection }
-    HTTP_SUCCESS = ->(r) { r.is_a? Net::HTTPSuccess }
-    HTTP_CLIENT_ERROR = ->(r) { r.is_a? Net::HTTPClientError }
-
     include Stats
     include Keys
 
@@ -33,13 +28,13 @@ module Etcd
       :ca_file,
       :user_name,
       :password,
-      :ssl_cert
+      :ssl_cert,
     )
 
     def_delegators :@config, :use_ssl, :verify_mode, :read_timeout
     def_delegators :@config, :user_name, :password
 
-    attr_reader :host, :port, :http, :config
+    attr_reader :host, :port, :http, :active_endpoint, :endpoints, :config
 
     ##
     # Creates an Etcd::Client object. It accepts a hash +opts+ as argument
@@ -50,8 +45,14 @@ module Etcd
     # @opts [Fixnum] :read_timeout set HTTP read timeouts (default 60)
     # rubocop:disable CyclomaticComplexity
     def initialize(opts = {})
+      raise ArgumentError.new('either set endpoints OR host/port options') if (opts[:host] or opts [:port]) and opts[:endpoints]
+      raise ArgumentError.new('when using endpoints instead of host/port options set protocol in endpoint instead of using use_ssl option(ie: "http://host:port" or https://host:port)') if not opts[:use_ssl].nil? and opts[:endpoints]
       @host = opts[:host] || '127.0.0.1'
       @port = opts[:port] || 4001
+      proto = (opts.key?(:use_ssl) and opts[:use_ssl]) ? "https" : "http"
+      @endpoints = opts[:endpoints] || ["#{proto}://#{@host}:#{@port}"]
+      @active_endpoint = @endpoints.sample
+      Log.debug("initialised etcd client with endpoints: #{@endpoints}")
       @config = Config.new
       @config.read_timeout = opts[:read_timeout] || 60
       @config.use_ssl = opts[:use_ssl] || false
@@ -74,7 +75,20 @@ module Etcd
 
     # Returns the etcd daemon version
     def version
-      api_execute('/version', :get).body
+      version_response = api_execute('/version', :get).body
+      begin
+        "etcd v" + JSON.parse(version_response)['etcdserver']
+      rescue JSON::ParserError
+        version_response
+      end
+    end
+
+    def members
+      JSON.parse(api_execute(version_prefix + '/members', :get).body.strip)['members']
+    end
+
+    def refresh_endpoints
+      @endpoints = members.collect{|member| member['clientURLs']}.flatten
     end
 
     # Get the current leader
@@ -91,65 +105,63 @@ module Etcd
     # rubocop:disable MethodLength, CyclomaticComplexity
     def api_execute(path, method, options = {})
       params = options[:params]
+      request_params = nil
+      request_body = nil
       case  method
-      when :get
-        req = build_http_request(Net::HTTP::Get, path, params)
-      when :post
-        req = build_http_request(Net::HTTP::Post, path, nil, params)
-      when :put
-        req = build_http_request(Net::HTTP::Put, path, nil, params)
-      when :delete
-        req = build_http_request(Net::HTTP::Delete, path, params)
+      when :get, :delete
+        request_params = params
+      when :post, :put
+        request_body = params
       else
         fail "Unknown http action: #{method}"
       end
-      http = Net::HTTP.new(host, port)
-      http.read_timeout = options[:timeout] || read_timeout
+      http = Faraday.new(@active_endpoint, request: {
+          timeout: options[:timeout] || read_timeout
+      })
       setup_https(http)
-      req.basic_auth(user_name, password) if [user_name, password].all?
-      Log.debug("Invoking: '#{req.class}' against '#{path}")
-      res = http.request(req)
-      Log.debug("Response code: #{res.code}")
+      http.basic_auth(user_name, password) if [user_name, password].all?
+      Log.debug("Invoking: '#{method}' against '#{path}")
+      http.params = request_params if not request_params.nil?
+      res = http.run_request(method, path, request_body, {})
+      Log.debug("Response code: #{res.status}")
       Log.debug("Response body: #{res.body}")
       process_http_request(res)
     end
 
     def setup_https(http)
-      http.use_ssl = use_ssl
-      http.verify_mode = verify_mode
+      http.ssl.verify = verify_mode
       if config.ssl_cert
         Log.debug('Setting up ssl cert')
-        http.cert = config.ssl_cert
+        http.ssl.client_cert = config.ssl_cert
       end
       if config.ssl_key
         Log.debug('Setting up ssl key')
-        http.key = config.ssl_key
+        http.ssl.client_key = config.ssl_key
       end
       if config.ca_file
         Log.debug('Setting up ssl ca file to :' + config.ca_file)
-        http.ca_file = config.ca_file
+        http.ssl.ca_file = config.ca_file
       end
     end
 
     # need to have original request to process the response when it redirects
     def process_http_request(res)
-      case res
-      when HTTP_SUCCESS
+      case res.success?
+      when true
         Log.debug('Http success')
         res
-      when HTTP_CLIENT_ERROR
+      when false
         fail Error.from_http_response(res)
       else
         Log.debug('Http error')
         Log.debug(res.body)
-        res.error!
       end
     end
     # rubocop:enable MethodLength
 
     def build_http_request(klass, path, params = nil, body = nil)
       path += '?' + URI.encode_www_form(params) unless params.nil?
-      req = klass.new(path)
+      req = Faraday::Request.new('get')
       req.body = URI.encode_www_form(body) unless body.nil?
       Etcd::Log.debug("Built #{klass} path:'#{path}'  body:'#{req.body}'")
       req
